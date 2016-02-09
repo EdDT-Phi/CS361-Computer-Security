@@ -6,13 +6,14 @@ public class SecureSystem {
 	public static Scanner scan;
 	public static ReferenceMonitor rf = ReferenceMonitor.getReferenceMonitor();
 
-	public static void main(String args[]) {
+	public static void main(String args[]) 
+  {
 		
-		System.out.println(args[1]);
+		System.out.println(args[0]);
 		
 //		scan = new Scanner(System.in);
 		try {
-			scan = new Scanner(new File(args[1]));
+			scan = new Scanner(new File(args[0]));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			return;
@@ -33,12 +34,13 @@ public class SecureSystem {
 		rf.createNewObject("Lobj", low);
 		rf.createNewObject("Hobj", high);
 
-		while (true) {
+		while (scan.hasNext()) {
 			rf.executeCommand(parse(scan.nextLine().toLowerCase()));
 		}
 	}
 
-	private static InstructionObject parse(String line) {
+	private static InstructionObject parse(String line) 
+  {
 		Scanner scanLine = new Scanner(line);
 		String subjectName, objectName;
 		int value;

@@ -1,0 +1,5 @@
+This instruction should fail
+wRite Hal Hobj 42
+write Lyle Hobj 99
+READ Lyle Hobj
+READ Hal Lobj

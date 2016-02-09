@@ -57,7 +57,9 @@ public class ReferenceMonitor {
 				return;
 			}
 			if (SecurityLevel.dominates(subj.sL, obj.sL))
-			subj.tempValue = obj.intValue;
+			 subj.tempValue = obj.intValue;
+      else
+        subj.tempValue = 0;
 			System.out.println(subj.name + " reads " + obj.name);
 		}
 
