@@ -1,7 +1,19 @@
 public class InstructionObject {
-	public static final int READ = 1, WRITE = 2, BAD = -1;
+	public static final int 
+    READ = 1, 
+    WRITE = 2,
+    CREATE = 3,
+    DESTROY = 4,
+    RUN = 5,
+    BAD = -1;
 	public int type, value;
 	public String subjectName, objectName;
+
+  // For runs
+  public InstructionObject(int type, String subjectName) {
+    this.type = type;
+    this.subjectName = subjectName;
+  }
 
 	// For reads
 	public InstructionObject(int type, String subjectName, String objectName) {
@@ -11,8 +23,7 @@ public class InstructionObject {
 	}
 
 	// For writes
-	public InstructionObject(int type, String subjectName, String objectName,
-			int value) {
+	public InstructionObject(int type, String subjectName, String objectName, int value) {
 		this.type = type;
 		this.subjectName = subjectName;
 		this.objectName = objectName;

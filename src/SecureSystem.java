@@ -1,82 +1,61 @@
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.*;
 
 public class SecureSystem {
-	public static Scanner scan;
-	public static ReferenceMonitor rf = ReferenceMonitor.getReferenceMonitor();
+    public static ReferenceMonitor rf;
+    public static final Scanner scan = new Scanner(System.in);
 
-	public static void main(String args[]) 
-  {
-		
-		System.out.println(args[0]);
-		
-//		scan = new Scanner(System.in);
-		try {
-			scan = new Scanner(new File(args[0]));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return;
-		}
-		
-		
-		// LOW and HIGH are constants defined in the SecurityLevel
-		// class, such that HIGH dominates LOW.
-		SecurityLevel low = SecurityLevel.LOW;
-		SecurityLevel high = SecurityLevel.HIGH;
+    public SecureSystem(String file) {
+        rf = ReferenceMonitor.getReferenceMonitor(file);
 
-		// We add two subjects, one high and one low.
+    }
 
-		rf.createSubject("Lyle", low);
-		rf.createSubject("Hal", high);
 
-		// We add two objects, one high and one low.
-		rf.createNewObject("Lobj", low);
-		rf.createNewObject("Hobj", high);
+    public static void main(String args[]) {
+        new SecureSystem("PrideAndPrejudice");
+        while (scan.hasNext()) {
+            rf.executeCommand(parse(scan.nextLine().toLowerCase()));
+        }
+    }
 
-		while (scan.hasNext()) {
-			rf.executeCommand(parse(scan.nextLine().toLowerCase()));
-		}
-	}
+    public static void execute(String line) {
 
-	private static InstructionObject parse(String line) 
-  {
-		Scanner scanLine = new Scanner(line);
-		String subjectName, objectName;
-		int value;
-		try {
-			String type = scanLine.next();
-			if (type.equals("read")) {
-				subjectName = scanLine.next();
-				objectName = scanLine.next();
+        rf.executeCommand(parse(line.toLowerCase()));
+    }
 
-				if (scanLine.hasNext()) {
-					scanLine.close();
-					return new InstructionObject(-1);
-				}
+    private static InstructionObject parse(String line) {
+        String[] args = line.split(" ");
+        switch (args[0]) {
+            case "read":
+                if (args.length != 3)
+                    return new InstructionObject(InstructionObject.BAD);
 
-				scanLine.close();
-				return new InstructionObject(1, subjectName, objectName);
-			} else if (type.equals("write")) {
+                return new InstructionObject(InstructionObject.READ, args[1], args[2]);
+            case "write":
+                if (args.length != 4)
+                    return new InstructionObject(InstructionObject.BAD);
 
-				subjectName = scanLine.next();
-				objectName = scanLine.next();
-				value = scanLine.nextInt();
+                try {
+                    return new InstructionObject(InstructionObject.WRITE, args[1], args[2], Integer.parseInt(args[3]));
+                } catch (Exception e) {
+                    return new InstructionObject(InstructionObject.BAD);
+                }
+            case "create":
+                if (args.length != 3)
+                    return new InstructionObject(InstructionObject.BAD);
 
-				if (scanLine.hasNext()) {
-					scanLine.close();
-					return new InstructionObject(-1);
-				}
+                return new InstructionObject(InstructionObject.CREATE, args[1], args[2]);
+            case "destroy":
+                if (args.length != 3)
+                    return new InstructionObject(InstructionObject.BAD);
 
-				scanLine.close();
-				return new InstructionObject(2, subjectName, objectName, value);
-			} else {
-				scanLine.close();
-				return new InstructionObject(-1);
-			}
-		} catch (Exception e) {
-			scanLine.close();
-			return new InstructionObject(-1);
-		}
-	}
+                return new InstructionObject(InstructionObject.DESTROY, args[1], args[2]);
+            case "run":
+                if (args.length != 2)
+                    return new InstructionObject(InstructionObject.BAD);
+
+                return new InstructionObject(InstructionObject.RUN, args[1]);
+            default:
+                return new InstructionObject(InstructionObject.BAD);
+        }
+    }
 }

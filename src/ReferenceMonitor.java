@@ -1,80 +1,178 @@
 import java.util.*;
+import java.io.*;
 
 public class ReferenceMonitor {
-	private static ReferenceMonitor refMon = new ReferenceMonitor();
-	private static HashMap<String, ssSubject> subjects = new HashMap<String, ssSubject>();
 
-	private ReferenceMonitor() {
-	}
+    private static FileOutputStream stream;
 
-	public static ReferenceMonitor getReferenceMonitor() {
-		return refMon;
-	}
+    class SecurityLevel {
 
-	public void createNewObject(String name, SecurityLevel sL) {
-		ObjectManager.createNewObject(name, sL);
-	}
+      public static final int HIGH = 1;
+      public static final int LOW = 0;
+      private int level;
 
-	public void createSubject(String name, SecurityLevel sL) {
-		subjects.put(name.toLowerCase(), new ssSubject(name, sL, 0));
-	}
+      public SecurityLevel(int sL) {
+          level = sL;
+      }
 
-	public void executeCommand(InstructionObject io) {
-		if (io.type == InstructionObject.READ)
-			ObjectManager.executeRead(io);
-		else if (io.type == InstructionObject.WRITE)
-			ObjectManager.executeWrite(io);
-		else
-			System.out.println("Bad Instruction");
-		ObjectManager.printState();
-	}
+      public SecurityLevel(SecurityLevel sL) {
+          level = sL.level;
+      }
 
-	private static class ObjectManager {
-		private static HashMap<String, ssObject> objects = new HashMap<String, ssObject>();
+      public boolean dominates(SecurityLevel sL2) {
+          return this.level >= sL2.level;
+      }
+    }
 
-		private static void createNewObject(String name, SecurityLevel sL) {
-			objects.put(name.toLowerCase(), new ssObject(name, sL, 0));
-		}
+    class ssSubject {
+        private String name;
+        private SecurityLevel sL;
+        private int tempValue = 0;
+        private int curBit = 0;
+        private byte byteToWrite = 0;
 
-		private static void executeWrite(InstructionObject io) {
-			ssSubject subj = subjects.get(io.subjectName);
-			ssObject obj = objects.get(io.objectName);
-			if (subj == null || obj == null) {
-				System.out.println("Bad Instruction");
-				return;
-			}
-			if (SecurityLevel.dominates(obj.sL, subj.sL))
-				obj.intValue = io.value;
-			System.out.println(subj.name + " writes value " + io.value + " to "
-					+ obj.name);
-		}
+        private ssSubject(String name, SecurityLevel sL) {
+            this.name = name;
+            this.sL = sL;
+        }
 
-		private static void executeRead(InstructionObject io) {
-			ssSubject subj = subjects.get(io.subjectName);
-			ssObject obj = objects.get(io.objectName);
-			if (subj == null || obj == null) {
-				System.out.println("Bad Instruction");
-				return;
-			}
-			if (SecurityLevel.dominates(subj.sL, obj.sL))
-			 subj.tempValue = obj.intValue;
-      else
-        subj.tempValue = 0;
-			System.out.println(subj.name + " reads " + obj.name);
-		}
 
-		public static void printState() {
-			System.out.println("The current state is:");
+        private void run() {
+            if (name.toLowerCase().equals("lyle")) {
+                byteToWrite += tempValue << curBit;
+                curBit++;
+                if (curBit >= 8) {
 
-			for (ssObject obj : objects.values()) {
-				System.out.println("	" + obj.name + " has value: "
-						+ obj.intValue);
-			}
-			for (ssSubject subj : subjects.values()) {
-				System.out.println("	" + subj.name + " has recently read: "
-						+ subj.tempValue);
-			}
-		}
+                    // output to file
+                    try {
+                        stream.write(byteToWrite);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
 
-	}
+                    curBit = 0;
+                    byteToWrite = 0;
+                }
+            }
+        }
+    }
+
+    private static ReferenceMonitor refMon = new ReferenceMonitor();
+    private static HashMap<String, ssSubject> subjects;
+    private static ObjectManager om = new ObjectManager();
+
+    private ReferenceMonitor() {
+        subjects = new HashMap<>();
+        SecurityLevel low = new SecurityLevel(SecurityLevel.LOW);
+        subjects.put("lyle", new ssSubject("lyle", new SecurityLevel(SecurityLevel.LOW)));
+        subjects.put("hal", new ssSubject("hal", new SecurityLevel(SecurityLevel.HIGH)));
+    }
+
+    public static ReferenceMonitor getReferenceMonitor(String fileName) {
+        try {
+            stream = new FileOutputStream(fileName + ".out");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return refMon;
+    }
+
+    public void executeCommand(InstructionObject io) {
+        if (io.type == InstructionObject.READ)
+            om.executeRead(io);
+        else if (io.type == InstructionObject.WRITE)
+            om.executeWrite(io);
+        else if (io.type == InstructionObject.CREATE)
+            om.executeCreate(io);
+        else if (io.type == InstructionObject.DESTROY)
+            om.executeDestroy(io);
+        else if (io.type == InstructionObject.RUN)
+            subjects.get(io.subjectName).run();
+
+    }
+
+    private static class ObjectManager {
+
+
+        private ObjectManager() {
+        }
+
+        class ssObject {
+            public String name;
+            public SecurityLevel sL;
+            public int intValue = 0;
+
+            public ssObject(String name, SecurityLevel sL) {
+                this.name = name;
+                this.sL = sL;
+            }
+        }
+
+        private static HashMap<String, ssObject> objects = new HashMap<>();
+
+        private void executeWrite(InstructionObject io) {
+            ssSubject subj = subjects.get(io.subjectName);
+            ssObject obj = objects.get(io.objectName);
+            if (subj == null || obj == null) {
+                return;
+            }
+            if (obj.sL.dominates(subj.sL))
+                obj.intValue = io.value;
+        }
+
+        private void executeRead(InstructionObject io) {
+            ssSubject subj = subjects.get(io.subjectName);
+            ssObject obj = objects.get(io.objectName);
+            if (subj == null || obj == null) {
+                return;
+            }
+
+            if (subj.sL.dominates(obj.sL))
+                subj.tempValue = obj.intValue;
+            else
+                subj.tempValue = 0;
+        }
+
+        private void executeDestroy(InstructionObject io) {
+            ssSubject subj = subjects.get(io.subjectName);
+            ssObject obj = objects.get(io.objectName);
+
+            if (subj == null || obj == null) {
+                return;
+            }
+
+            if (obj.sL.dominates(subj.sL)) {
+                objects.remove(io.objectName);
+            }
+
+        }
+
+        private void executeCreate(InstructionObject io) {
+            ssSubject subj = subjects.get(io.subjectName);
+            ssObject obj = objects.get(io.objectName);
+
+            if (subj == null || obj != null) {
+                return;
+            }
+
+            obj = new ssObject(io.objectName, subj.sL);
+
+            objects.put(io.objectName.toLowerCase(), obj);
+        }
+
+
+        public void printState() {
+            System.out.println("The current state is:");
+
+            for (ssObject obj : objects.values()) {
+                System.out.println("	" + obj.name + " has value: "
+                        + obj.intValue);
+            }
+
+            for (ssSubject subj : subjects.values()) {
+                System.out.println("	" + subj.name + " has recently read: "
+                        + subj.tempValue);
+            }
+        }
+    }
 }
