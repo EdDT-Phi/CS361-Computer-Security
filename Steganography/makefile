@@ -3,5 +3,7 @@ default:
 	javac *.java;
 clean:
 	rm *.class;
+	rm *.out;
+	rm log;
 babies:
-	java SecureSystem instructionList
+	java Steganography -E inputImage.bmp
