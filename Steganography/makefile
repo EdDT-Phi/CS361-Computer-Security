@@ -2,8 +2,9 @@ default:
 	clear;
 	javac *.java;
 clean:
-	rm *.class;
-	rm *.out;
-	rm log;
+	rm -f *.class;
+	rm -f *.out;
+	rm -f *-steg.bmp;
 babies:
-	java Steganography -E inputImage.bmp
+	java Steganography -E inputImage.bmp description
+	java Steganography -D inputImage.bmp-steg.bmp description.out
