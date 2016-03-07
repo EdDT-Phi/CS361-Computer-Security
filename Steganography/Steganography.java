@@ -16,10 +16,17 @@ public class Steganography {
 
     if (args.length != 3)
       System.out.println("Usage: java Steganography -[ED] image file");
-    if(args[0].equals("-E"))
+    if(args[0].equals("-E")) {
+
       encode(args[1], args[2]);
-    if(args[0].equals("-D"))
+      System.out.printf("Encoded %d bytes\n", bytes);
+    }
+    else if(args[0].equals("-D")){
       decode(args[1], args[2]);
+      System.out.printf("Recovered %d bytes\n", bytes);
+    } else {
+      System.out.println("Usage: java Steganography -[ED] image file");
+    }
 
 
       // BufferedImage img = new BufferedImage(height, width, BufferedImage.TYPE_INT_ARGB);
@@ -40,19 +47,16 @@ public class Steganography {
         blue = pixel & 255;
 
         if(red == 0) {
-          writeNextBit(0);
           stream.close();
           return;
         }
         writeNextBit(red % 2);
         if(green == 0) {
-          writeNextBit(0);
           stream.close();
           return;
         }
         writeNextBit(green % 2);
         if(blue == 0) {
-          writeNextBit(0);
           stream.close();
           return;
         }
@@ -63,9 +67,15 @@ public class Steganography {
 
   public static void encode(String image, String file) throws Exception{
     BufferedImage img = ImageIO.read(new File(image));
-    is = new ByteArrayInputStream(Files.readAllBytes(new File(file).toPath()));
-
+    File secret = new File(file);
+    is = new ByteArrayInputStream(Files.readAllBytes(secret.toPath()));
     System.out.printf("Encoding from \"%s\" into \"%s-steg.bmp\"\nheight: %d\nwidth: %d\npixels: %d\n", file, image, img.getHeight(), img.getWidth(), img.getHeight()*img.getWidth());
+    System.out.printf("Size of secret: %d\n", secret.length());
+
+    String newName= image.substring(0, image.lastIndexOf('.'))
+                    + "-steg" +
+                    image.substring(image.lastIndexOf('.'));
+
 
     int pixel = 0, alpha = 0, red= 0, green = 0, blue = 0, bit;
     for(int i = 0; i < img.getHeight(); i++) {
@@ -78,7 +88,7 @@ public class Steganography {
 
         if((bit = getNextBit()) == -1) {
           setPixel(img, alpha + (green<<8) + blue, i , j);
-          ImageIO.write(img, "BMP", new File(image + "-steg.bmp"));
+          ImageIO.write(img, "BMP", new File(newName));
           return;
         }
         if(red%2 != bit%2) red ++;
@@ -86,7 +96,7 @@ public class Steganography {
 
         if((bit = getNextBit()) == -1) {
           setPixel(img, alpha + (red<<16) + blue, i , j);
-          ImageIO.write(img, "BMP", new File(image + "-steg.bmp"));
+          ImageIO.write(img, "BMP", new File(newName));
           return;
         }
         if(green%2 != bit%2) green ++;
@@ -94,7 +104,7 @@ public class Steganography {
 
         if((bit = getNextBit()) == -1) {
           setPixel(img, alpha + (red<<16) + (green<<8), i , j);
-          ImageIO.write(img, "BMP", new File(image + "-steg.bmp"));
+          ImageIO.write(img, "BMP", new File(newName));
           return;
         }
         if(blue%2 != bit%2) blue ++;
@@ -106,16 +116,18 @@ public class Steganography {
 
     System.out.printf("WARN: File size truncated, can only store %d bytes\n", img.getHeight() * img.getWidth() / 8);
     setPixel(img, alpha + (red<<16) + (green<<8), img.getHeight()-1 , img.getWidth()-1);
-    ImageIO.write(img, "BMP", new File(image + "-steg.bmp"));
+    ImageIO.write(img, "BMP", new File(newName));
   }
 
   public static int getNextBit() {
     if(count == 0) { // get new byte
-      bytes ++;
       count = 8;
-      if ((me = (byte) is.read()) == -1){
+      int read = is.read();
+      if(read == -1) {
         return -1;
       }
+      bytes ++;
+      me = (byte) read;
     }
     int bit = me & 1;
     count--;
@@ -129,6 +141,7 @@ public class Steganography {
     if (count >= 8) {
       // output to file
       try {
+        bytes ++;
         stream.write(me);
       } catch (IOException e) {
         e.printStackTrace();
