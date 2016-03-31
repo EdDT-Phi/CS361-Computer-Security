@@ -1,4 +1,5 @@
 import java.util.*;
+import java.io.*;
 
 // https://rosettacode.org/wiki/Huffman_coding#Java
 
@@ -32,7 +33,7 @@ class HuffmanNode extends HuffmanTree {
     }
 }
 
-public class HuffmanCode {
+public class Encoder {
     // input is an array of frequencies, indexed by character code
     public static HuffmanTree buildTree(int[] charFreqs) {
         PriorityQueue<HuffmanTree> trees = new PriorityQueue<HuffmanTree>();
@@ -61,8 +62,8 @@ public class HuffmanCode {
             HuffmanLeaf leaf = (HuffmanLeaf)tree;
 
             // print out character, frequency, and code for this leaf (which is just the prefix)
-            System.out.println(leaf.value + "\t" + leaf.frequency + "\t" + prefix);
-
+            System.out.println((char) (leaf.value + 'a') + "\t" + leaf.frequency + "\t" + prefix);
+            bits[leaf.value] = prefix.toString();
         } else if (tree instanceof HuffmanNode) {
             HuffmanNode node = (HuffmanNode)tree;
 
@@ -78,21 +79,68 @@ public class HuffmanCode {
         }
     }
 
+    static String[] bits = new String[26];
     public static void main(String[] args) {
         String test = "this is an example for huffman encoding";
 
-        // we will assume that all our characters will have
-        // code less than 256, for simplicity
-        int[] charFreqs = new int[256];
-        // read each character and record the frequencies
-        for (char c : test.toCharArray())
-            charFreqs[c]++;
+        if (args.length != 2)
+            System.out.println("Usage: java Encoder {frequencyFile} k");
+
+        Scanner lineScanner;
+        int[] prob = new int[26];
+        int sum = 0, i = 0;
+        try (BufferedReader br = new BufferedReader(new FileReader(new File(args[0])))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                prob[i] = Integer.parseInt(line);
+                sum += prob[i++];
+            }
+        } catch(Exception ignored) {
+            System.out.println("Nah");
+            return;
+        }
+        float entropy = 0;
+        for(int n: prob){
+            if(n > 0)
+                entropy += n * Math.log(n / (double)sum) / Math.log(2);
+        }
+
+        entropy /= -sum;
+
+        System.out.printf("Entropy: %f\n", entropy);
 
         // build tree
-        HuffmanTree tree = buildTree(charFreqs);
+        HuffmanTree tree = buildTree(prob);
 
         // print out results
         System.out.println("SYMBOL\tWEIGHT\tHUFFMAN CODE");
         printCodes(tree, new StringBuffer());
+
+
+        makeVolumeOfText(prob, sum, 100);
+    }
+
+    public static void makeVolumeOfText (int[] prob, int symbolCount, int k)
+    {
+        try (PrintWriter out1  = new PrintWriter(new FileWriter(new File("testText.txt")))) {
+            int index;
+            //Add a character k times
+            for (int i = 0; i < k; i++)
+            {
+                //Find a random number from 0 to symbolCount
+                int randomNum = (int) Math.floor(Math.random() * symbolCount);
+                for (index = 0; index < prob.length; index++)
+                {
+                    //Subtract from the randomNum the value in each index of prob[] till you reach 0 to iterate to the correct index.
+                    randomNum -= prob[index];
+                    if (randomNum <= 0)
+                        break;
+                }
+                //Now that you have the index, add the letter that pertains to that index to the file
+                out1.append((char)('a' + index));
+            }
+        } catch (Exception ignored) {
+            System.out.println("Nahh");
+        }
     }
 }
