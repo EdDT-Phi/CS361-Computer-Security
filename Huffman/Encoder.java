@@ -6,7 +6,10 @@ import java.io.*;
 
 abstract class HuffmanTree implements Comparable<HuffmanTree> {
     public final int frequency; // the frequency of this tree
-    public HuffmanTree(int freq) { frequency = freq; }
+
+    public HuffmanTree(int freq) {
+        frequency = freq;
+    }
 
     // compares on the frequency
     public int compareTo(HuffmanTree tree) {
@@ -41,7 +44,7 @@ public class Encoder {
         // one for each non-empty character
         for (int i = 0; i < charFreqs.length; i++)
             if (charFreqs[i] > 0)
-                trees.offer(new HuffmanLeaf(charFreqs[i], (char)i));
+                trees.offer(new HuffmanLeaf(charFreqs[i], (char) i));
 
         assert trees.size() > 0;
         // loop until there is only one tree left
@@ -59,50 +62,52 @@ public class Encoder {
     public static void printCodes(HuffmanTree tree, StringBuffer prefix) {
         assert tree != null;
         if (tree instanceof HuffmanLeaf) {
-            HuffmanLeaf leaf = (HuffmanLeaf)tree;
+            HuffmanLeaf leaf = (HuffmanLeaf) tree;
 
             // print out character, frequency, and code for this leaf (which is just the prefix)
             System.out.println((char) (leaf.value + 'a') + "\t" + leaf.frequency + "\t" + prefix);
             bits[leaf.value] = prefix.toString();
         } else if (tree instanceof HuffmanNode) {
-            HuffmanNode node = (HuffmanNode)tree;
+            HuffmanNode node = (HuffmanNode) tree;
 
             // traverse left
             prefix.append('0');
             printCodes(node.left, prefix);
-            prefix.deleteCharAt(prefix.length()-1);
+            prefix.deleteCharAt(prefix.length() - 1);
 
             // traverse right
             prefix.append('1');
             printCodes(node.right, prefix);
-            prefix.deleteCharAt(prefix.length()-1);
+            prefix.deleteCharAt(prefix.length() - 1);
         }
     }
 
     static String[] bits = new String[26];
-    public static void main(String[] args) {
-        String test = "this is an example for huffman encoding";
+    static int numLetters = 0;
 
+    public static void main(String[] args) {
         if (args.length != 2)
             System.out.println("Usage: java Encoder {frequencyFile} k");
 
         Scanner lineScanner;
         int[] prob = new int[26];
-        int sum = 0, i = 0;
+        int sum = 0;
+        int k = 0;
         try (BufferedReader br = new BufferedReader(new FileReader(new File(args[0])))) {
             String line;
+            k = Integer.parseInt(args[1]);
             while ((line = br.readLine()) != null) {
-                prob[i] = Integer.parseInt(line);
-                sum += prob[i++];
+                prob[numLetters] = Integer.parseInt(line);
+                sum += prob[numLetters++];
             }
-        } catch(Exception ignored) {
+        } catch (Exception ignored) {
             System.out.println("Nah");
             return;
         }
         float entropy = 0;
-        for(int n: prob){
-            if(n > 0)
-                entropy += n * Math.log(n / (double)sum) / Math.log(2);
+        for (int n : prob) {
+            if (n > 0)
+                entropy += n * Math.log(n / (double) sum) / Math.log(2);
         }
 
         entropy /= -sum;
@@ -116,28 +121,62 @@ public class Encoder {
         System.out.println("SYMBOL\tWEIGHT\tHUFFMAN CODE");
         printCodes(tree, new StringBuffer());
 
+        makeVolumeOfText(prob, sum, k);
 
-        makeVolumeOfText(prob, sum, 100);
+        encode();
+        decode();
     }
 
-    public static void makeVolumeOfText (int[] prob, int symbolCount, int k)
-    {
-        try (PrintWriter out1  = new PrintWriter(new FileWriter(new File("testText.txt")))) {
+    public static void encode() {
+        try (BufferedReader br = new BufferedReader(new FileReader(new File("testText")));
+             PrintWriter printer = new PrintWriter(new FileWriter(new File("testText.enc1")))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String encryption = "";
+                int i = 0;
+                while (encryption.equals("")) {
+                    encryption = bits[line.charAt(0) - 'a'] + "\n";
+                }
+                printer.append(encryption);
+            }
+        } catch (Exception ignored) {
+            System.out.println("Justin you fucked up");
+        }
+    }
+
+    public static void decode() {
+        try (BufferedReader br = new BufferedReader(new FileReader(new File("testText.enc1")));
+             PrintWriter printer = new PrintWriter(new FileWriter(new File("testText.dec2")))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String decryption = "";
+                int i = 0;
+                while (decryption.equals("")) {
+                    if (bits[i++].equals(line)) {
+                        decryption = (char) ('a' + i - 1) + "";
+                    }
+                }
+                printer.append(decryption);
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+    public static void makeVolumeOfText(int[] prob, int symbolCount, int k) {
+        try (PrintWriter out1 = new PrintWriter(new FileWriter(new File("testText")))) {
             int index;
             //Add a character k times
-            for (int i = 0; i < k; i++)
-            {
+            for (int i = 0; i < k; i++) {
                 //Find a random number from 0 to symbolCount
                 int randomNum = (int) Math.floor(Math.random() * symbolCount);
-                for (index = 0; index < prob.length; index++)
-                {
+                for (index = 0; index < prob.length; index++) {
                     //Subtract from the randomNum the value in each index of prob[] till you reach 0 to iterate to the correct index.
                     randomNum -= prob[index];
                     if (randomNum <= 0)
                         break;
                 }
                 //Now that you have the index, add the letter that pertains to that index to the file
-                out1.append((char)('a' + index));
+                out1.append((char) ('a' + index) + "\n");
             }
         } catch (Exception ignored) {
             System.out.println("Nahh");
