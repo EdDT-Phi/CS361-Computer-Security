@@ -88,7 +88,7 @@ public class Encoder {
 
     public static void main(String[] args) {
         if (args.length != 2) {
-            System.out.println("Usage: java Encoder {frequencyFile} k");
+            System.out.println("Usage: java Encoder frequencyFile k [j]");
         }
 
         Scanner lineScanner;
@@ -116,7 +116,6 @@ public class Encoder {
 
         entropy /= -sum;
 
-
         // build tree
         HuffmanTree tree = buildTree(prob);
 
@@ -126,10 +125,7 @@ public class Encoder {
 
         makeVolumeOfText(prob, sum, k);
 
-        System.out.printf("Entropy: %f\n", entropy);
         int bitsEncode = encode(1, numLetters);
-        System.out.printf("Average bits per symbol = %f\n", bitsEncode/ (double) k);
-        System.out.println("Diff: " + entropy * k * 100 / bitsEncode + "%\n\n");
         decode(1);
 
 
@@ -142,29 +138,26 @@ public class Encoder {
             }
         }
 
-        float entropy2 = 0;
-        for (int n : prob2) {
-            if (n > 0) {
-                entropy2 += n * Math.log(n / (double) (sum * sum)) / Math.log(2);
-            }
-        }
-
-        entropy2 /= -(sum*sum*2);
-
-
-
         HuffmanTree tree2 = buildTree(prob2);
 
         // print out results
-        System.out.println("SYMBOL\tWEIGHT\tHUFFMAN CODE");
+        System.out.println("\nSYMBOL\tWEIGHT\tHUFFMAN CODE");
         printCodes(tree2, new StringBuffer());
+
+
+        System.out.printf("\nEntropy: %f\n", entropy);
+        System.out.printf("Bits per symbol 1: %f\n", bitsEncode/ (double) k);
+        System.out.println("Diff 1: " + entropy * k * 100 / bitsEncode + "%");
 
 //        makeVolumeOfText(prob2, sum * sum, k);
         bitsEncode = encode(2, numLetters);
-        System.out.printf("Entropy: %f\n", entropy2);
-        System.out.printf("Average bits per symbol = %f\n", bitsEncode/ (double) k);
-        System.out.println("Diff: " + entropy * k * 100 / bitsEncode + "%");
+        System.out.printf("\nBits per symbol 2: %f\n", bitsEncode/ (double) k);
+        System.out.println("Diff 2: " + entropy * k * 100 / bitsEncode + "%");
         decode(2);
+
+        if(args.length == 3){
+            int j = Integer.parseInt(args[2]);
+        }
     }
 
     public static int encode(int num, int numLetters) {
