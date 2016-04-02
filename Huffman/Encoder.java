@@ -129,7 +129,7 @@ public class Encoder {
         System.out.printf("Entropy: %f\n", entropy);
         int bitsEncode = encode(1, numLetters);
         System.out.printf("Average bits per symbol = %f\n", bitsEncode/ (double) k);
-        System.out.println("Diff: " + ((bitsEncode / k / entropy * 100) - 100) + "%\n\n");
+        System.out.println("Diff: " + entropy * k * 100 / bitsEncode + "%\n\n");
         decode(1);
 
 
@@ -142,14 +142,14 @@ public class Encoder {
             }
         }
 
-        entropy = 0;
+        float entropy2 = 0;
         for (int n : prob2) {
             if (n > 0) {
-                entropy += n * Math.log(n / (double) (sum * sum)) / Math.log(2);
+                entropy2 += n * Math.log(n / (double) (sum * sum)) / Math.log(2);
             }
         }
 
-        entropy /= -(sum*sum*2);
+        entropy2 /= -(sum*sum*2);
 
 
 
@@ -161,9 +161,9 @@ public class Encoder {
 
 //        makeVolumeOfText(prob2, sum * sum, k);
         bitsEncode = encode(2, numLetters);
-        System.out.printf("Entropy: %f\n", entropy);
+        System.out.printf("Entropy: %f\n", entropy2);
         System.out.printf("Average bits per symbol = %f\n", bitsEncode/ (double) k);
-        System.out.println("Diff: " + ((bitsEncode * 100 /  k / entropy ) - 100) + "%");
+        System.out.println("Diff: " + entropy * k * 100 / bitsEncode + "%");
         decode(2);
     }
 
