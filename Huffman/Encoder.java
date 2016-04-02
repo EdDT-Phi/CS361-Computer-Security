@@ -65,7 +65,7 @@ public class Encoder {
             HuffmanLeaf leaf = (HuffmanLeaf) tree;
 
             // print out character, frequency, and code for this leaf (which is just the prefix)
-            System.out.println((char) (leaf.value + 'a') + "\t" + leaf.frequency + "\t" + prefix);
+            System.out.println(letter.get((int) leaf.value) + "\t" + leaf.frequency + "\t" + prefix);
             bits[leaf.value] = prefix.toString();
         } else if (tree instanceof HuffmanNode) {
             HuffmanNode node = (HuffmanNode) tree;
@@ -84,10 +84,12 @@ public class Encoder {
 
     static String[] bits = new String[26];
     static int numLetters = 0;
+    static HashMap<Integer, String> letter = new HashMap<Integer, String>();
 
     public static void main(String[] args) {
-        if (args.length != 2)
+        if (args.length != 2) {
             System.out.println("Usage: java Encoder {frequencyFile} k");
+        }
 
         Scanner lineScanner;
         int[] prob = new int[26];
@@ -98,6 +100,7 @@ public class Encoder {
             k = Integer.parseInt(args[1]);
             while ((line = br.readLine()) != null) {
                 prob[numLetters] = Integer.parseInt(line);
+                letter.put(numLetters, (char) (numLetters + 'A') + "");
                 sum += prob[numLetters++];
             }
         } catch (Exception ignored) {
@@ -106,13 +109,13 @@ public class Encoder {
         }
         float entropy = 0;
         for (int n : prob) {
-            if (n > 0)
+            if (n > 0) {
                 entropy += n * Math.log(n / (double) sum) / Math.log(2);
+            }
         }
 
         entropy /= -sum;
 
-        System.out.printf("Entropy: %f\n", entropy);
 
         // build tree
         HuffmanTree tree = buildTree(prob);
@@ -123,42 +126,90 @@ public class Encoder {
 
         makeVolumeOfText(prob, sum, k);
 
-        encode();
-        decode();
+        System.out.printf("Entropy: %f\n", entropy);
+        int bitsEncode = encode(1, numLetters);
+        System.out.printf("Average bits per symbol = %f\n", bitsEncode/ (double) k);
+        System.out.println("Diff: " + ((bitsEncode / k / entropy * 100) - 100) + "%\n\n");
+        decode(1);
+
+
+        int[] prob2 = new int[numLetters * numLetters];
+        bits = new String[numLetters * numLetters];
+        for (int i = 0; i < numLetters; i++) {
+            for (int j = 0; j < numLetters; j++) {
+                letter.put(i * numLetters + j, "" + (char) (i + 'A') + (char) (j + 'A'));
+                prob2[i * numLetters + j] = prob[i] * prob[j];
+            }
+        }
+
+        entropy = 0;
+        for (int n : prob2) {
+            if (n > 0) {
+                entropy += n * Math.log(n / (double) (sum * sum)) / Math.log(2);
+            }
+        }
+
+        entropy /= -(sum*sum*2);
+
+
+
+        HuffmanTree tree2 = buildTree(prob2);
+
+        // print out results
+        System.out.println("SYMBOL\tWEIGHT\tHUFFMAN CODE");
+        printCodes(tree2, new StringBuffer());
+
+//        makeVolumeOfText(prob2, sum * sum, k);
+        bitsEncode = encode(2, numLetters);
+        System.out.printf("Entropy: %f\n", entropy);
+        System.out.printf("Average bits per symbol = %f\n", bitsEncode/ (double) k);
+        System.out.println("Diff: " + ((bitsEncode * 100 /  k / entropy ) - 100) + "%");
+        decode(2);
     }
 
-    public static void encode() {
+    public static int encode(int num, int numLetters) {
+        int count = 0;
         try (BufferedReader br = new BufferedReader(new FileReader(new File("testText")));
-             PrintWriter printer = new PrintWriter(new FileWriter(new File("testText.enc1")))) {
+             PrintWriter printer = new PrintWriter(new FileWriter(new File("testText.enc" + num)))) {
             String line;
             while ((line = br.readLine()) != null) {
-                String encryption = "";
-                int i = 0;
-                while (encryption.equals("")) {
-                    encryption = bits[line.charAt(0) - 'a'] + "\n";
+                for(int index = 0; index < line.length(); index += num) {
+                    String letters = line.substring(index, index + num);
+                    String encryption = "";
+                    int i = 0;
+                    while (encryption.equals("")) {
+                        if (num == 1) {
+                            encryption = bits[letters.charAt(0) - 'A'] + "\n";
+                        } else {
+                            encryption = bits[(letters.charAt(0) - 'A') * numLetters + letters.charAt(1) - 'A'] + "\n";
+                        }
+                    }
+                    count += encryption.length();
+                    printer.append(encryption);
                 }
-                printer.append(encryption);
             }
         } catch (Exception ignored) {
-            System.out.println("Justin you fucked up");
+            System.out.println("Nahhh");
         }
+        return count;
     }
 
-    public static void decode() {
-        try (BufferedReader br = new BufferedReader(new FileReader(new File("testText.enc1")));
-             PrintWriter printer = new PrintWriter(new FileWriter(new File("testText.dec2")))) {
+    public static void decode(int num) {
+        try (BufferedReader br = new BufferedReader(new FileReader(new File("testText.enc" + num)));
+             PrintWriter printer = new PrintWriter(new FileWriter(new File("testText.dec" + num)))) {
             String line;
             while ((line = br.readLine()) != null) {
                 String decryption = "";
                 int i = 0;
                 while (decryption.equals("")) {
                     if (bits[i++].equals(line)) {
-                        decryption = (char) ('a' + i - 1) + "";
+                        decryption = letter.get(i-1); // (char) ('A' + i - 1) + "";
                     }
                 }
                 printer.append(decryption);
             }
         } catch (Exception ignored) {
+            System.out.println("Nahhhh");
         }
     }
 
@@ -176,7 +227,7 @@ public class Encoder {
                         break;
                 }
                 //Now that you have the index, add the letter that pertains to that index to the file
-                out1.append((char) ('a' + index) + "\n");
+                out1.append(letter.get(index));
             }
         } catch (Exception ignored) {
             System.out.println("Nahh");
