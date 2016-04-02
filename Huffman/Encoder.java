@@ -87,9 +87,53 @@ public class Encoder {
     static HashMap<Integer, String> letter = new HashMap<Integer, String>();
 
     public static void main(String[] args) {
-        if (args.length != 2) {
+
+        if (args.length != 2 && args.length != 3) {
             System.out.println("Usage: java Encoder frequencyFile k [j]");
         }
+        if(args.length == 3) {
+            try (BufferedReader br = new BufferedReader(new FileReader(new File(args[0])))) {
+                int num = Integer.parseInt(args[2]);
+                HashMap<Integer, String> temp = new HashMap<Integer, String>();
+                int[] originalProb = new int[26];
+                int sum = 0;
+                String line;
+
+                while ((line = br.readLine()) != null) {
+                    originalProb[numLetters] = Integer.parseInt(line);
+                    letter.put(numLetters, (char) (numLetters + 'A') + "");
+                    sum += originalProb[numLetters++];
+                }
+
+                int[] finalProb = originalProb;
+                for (int i = 0; i < num - 1; i++) {
+                    int[] tempProb = new int[(int) Math.pow(numLetters, num)];
+                    temp = new HashMap<Integer, String>();
+                    for (int j = 0; j < letter.size(); j++) {
+                        for (int k = 0; k < numLetters; k++) {
+                            temp.put(j * numLetters + k, (char) (k + 'A') + letter.get(j));
+                            tempProb[j * numLetters + k] = finalProb[j] * originalProb[k];
+                        }
+                    }
+                    finalProb = tempProb;
+                    letter = temp;
+                }
+
+                bits = new String[finalProb.length];
+                // build tree
+                HuffmanTree tree = buildTree(finalProb);
+
+                // print out results
+                System.out.println("SYMBOL\tWEIGHT\tHUFFMAN CODE");
+                printCodes(tree, new StringBuffer());
+
+                return;
+            } catch (Exception e) {
+                System.out.println("WHAT HAVE YOU DONE: "+e);
+                return;
+            }
+        }
+
 
         Scanner lineScanner;
         int[] prob = new int[26];
@@ -149,15 +193,10 @@ public class Encoder {
         System.out.printf("Bits per symbol 1: %f\n", bitsEncode/ (double) k);
         System.out.println("Diff 1: " + entropy * k * 100 / bitsEncode + "%");
 
-//        makeVolumeOfText(prob2, sum * sum, k);
         bitsEncode = encode(2, numLetters);
         System.out.printf("\nBits per symbol 2: %f\n", bitsEncode/ (double) k);
         System.out.println("Diff 2: " + entropy * k * 100 / bitsEncode + "%");
         decode(2);
-
-        if(args.length == 3){
-            int j = Integer.parseInt(args[2]);
-        }
     }
 
     public static int encode(int num, int numLetters) {
