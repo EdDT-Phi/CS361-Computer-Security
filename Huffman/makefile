@@ -4,7 +4,7 @@ default:
 clean:
 	rm -f *.class;
 	rm -f testText.txt
-	rm testText*
+	rm -f testText*
 turnin:
 	zip jdt2725_et7226_program4.zip *
 love:
