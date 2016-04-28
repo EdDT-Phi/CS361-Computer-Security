@@ -7,12 +7,13 @@ class Mangles
   public static void main(String[] args) 
   {
   	ArrayList<String> guesses = new ArrayList<String>();
-  	prepend("Prepend", guesses);
-  	append("Append", guesses);
-
-
+  	preappend("preappend", guesses);
+  	// append("Append", guesses);
+    deleteFirst("DeleteFirst", guesses);
+    deleteLast("DeleteLast", guesses);
+    reverseString("ReverseString", guesses);
     capitalize("capitalize", guesses);
-    // ncapitalize("ncapitalize", guesses);
+    duplicate("duplicate", guesses);
     toggle("toggle", guesses);
   	for (int i = 0; i < guesses.size(); i++)
   	{
@@ -20,21 +21,12 @@ class Mangles
   	}
   }
 
-
-  public static void prepend(String word, ArrayList<String> guesses)
+  public static void preappend(String word, ArrayList<String> guesses)
   {
     String typableChars = "abcdefghijklmnopqrstuvwxyz1234567890-=[];',./!@#$%^&*()_+{}|:<>?\\\"";
     for (int i = 0; i < typableChars.length(); i++)
     {
       guesses.add(typableChars.charAt(i) + word);
-    }
-  }
-
-  public static void append(String word, ArrayList<String> guesses)
-  {
-    String typableChars = "abcdefghijklmnopqrstuvwxyz1234567890-=[];',./!@#$%^&*()_+{}|:<>?\\\"";
-    for (int i = 0; i < typableChars.length(); i++)
-    {
       guesses.add(word + typableChars.charAt(i));
     }
   }
@@ -72,5 +64,32 @@ class Mangles
 
     guesses.add(temp.toString());
     guesses.add(temp2.toString());
+  }
+
+  public static void duplicate(String word, ArrayList<String> guesses)
+  {
+    guesses.add(word + word);
+  }
+
+  public static void deleteFirst(String word, ArrayList<String> guesses)
+  {
+    guesses.add(word.substring(1));
+  }
+
+  public static void deleteLast(String word, ArrayList<String> guesses)
+  {
+    guesses.add(word.substring(0, word.length()-1));
+  }
+
+  public static void reverseString(String word, ArrayList<String> guesses)
+  {
+    String reversed = "";
+    for (int i = word.length()-1; i >= 0; i--)
+    {
+      reversed += word.charAt(i);
+    }
+    guesses.add(reversed);
+    guesses.add(reversed + word);
+    guesses.add(word + reversed);
   }
 }
