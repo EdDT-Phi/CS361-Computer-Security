@@ -9,21 +9,15 @@ class Mangles
   	ArrayList<String> guesses = new ArrayList<String>();
   	prepend("Prepend", guesses);
   	append("Append", guesses);
+    deleteFirst("DeleteFirst", guesses);
+    deleteLast("DeleteLast", guesses);
+    reverseString("ReverseString", guesses);
+
+    // Print Guesses
   	for (int i = 0; i < guesses.size(); i++)
   	{
   		System.out.println(guesses.get(i));
   	}
-  }
-
-  public static void toggle(String word, ArrayList<String> guesses)
-  {
-    String temp = "";
-    int i = 0;
-    for(char c : word.toCharArray())
-    {
-      if(i % 2 = 0)
-      temp += 
-    }
   }
 
   public static void prepend(String word, ArrayList<String> guesses)
@@ -43,4 +37,25 @@ class Mangles
   		guesses.add(word + typableChars.charAt(i));
   	}
   }
+
+  public static void deleteFirst(String word, ArrayList<String> guesses)
+  {
+    guesses.add(word.substring(1));
+  }
+
+  public static void deleteLast(String word, ArrayList<String> guesses)
+  {
+    guesses.add(word.substring(0, word.length()-1));
+  }
+
+  public static void reverseString(String word, ArrayList<String> guesses)
+  {
+    String reversed = "";
+    for (int i = word.length()-1; i >= 0; i--)
+    {
+      reversed += word.charAt(i);
+    }
+    guesses.add(reversed);
+  }
+
 }
