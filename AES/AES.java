@@ -86,7 +86,8 @@ class AES {
 
    public static void main(String[] args) {
       if(args.length != 3) {
-         debug("Usage: java AES option keyFile inputFile");
+         System.out.println("Usage: java AES option keyFile inputFile");
+         return;
       }
 
       boolean encode;
@@ -102,7 +103,7 @@ class AES {
          encode = false;
          outputFileName += ".dec";
       } else {
-         debug("option must be one of \"e\" or \"d\"");
+         System.out.println("option must be one of \"e\" or \"d\"");
          return;
       }
 
@@ -139,9 +140,12 @@ class AES {
       printArr(key, 32, "", false);
 
       String input;
+      long startTime = System.nanoTime();
+      int fileSize = 0;
       try(BufferedWriter bw = new BufferedWriter(new FileWriter(new File(outputFileName)))) {
          while(inputFile.hasNext()) {
             input = inputFile.next();
+            fileSize += 16; // bytes
             for(int i = 0; i < 16; ++i) {
                block[i/4][i%4] = i < input.length()/2 ?  Integer.decode("0x" + input.substring(i*2, i*2 + 2).toLowerCase()) : 0;
             }
@@ -169,6 +173,11 @@ class AES {
       } catch (Exception ignore){
          System.out.println("Something went wrong");
       }
+      long duration = System.nanoTime() - startTime;
+      System.out.println("Execution took: " + duration / 1000000 + " milliseconds");
+      System.out.printf("FileSize: %d bytes\n", fileSize);
+      System.out.printf("Throughput: %f MB/sec\n", fileSize/(double) duration * 1000);
+
       inputFile.close();
    }
 
