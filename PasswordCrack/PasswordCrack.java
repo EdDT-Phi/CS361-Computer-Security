@@ -5,6 +5,10 @@ class PasswordCrack
 {
 
   public static ArrayList<String> guesses;
+  public static ArrayList<String> encryptions = new ArrayList<String>();
+  public static ArrayList<String> salts = new ArrayList<String>();
+  public static ArrayList<String> fname = new ArrayList<String>();
+  public static ArrayList<String> lname = new ArrayList<String>();
   public static void main(String[] args) 
   {
     if(args.length != 2) {
@@ -17,12 +21,8 @@ class PasswordCrack
       Scanner passReader = new Scanner(new File(args[1]))) 
     {
 
-      ArrayList<String> encryptions = new ArrayList<String>();
-      ArrayList<String> salts = new ArrayList<String>();
-      ArrayList<String> fname = new ArrayList<String>();
-      ArrayList<String> lname = new ArrayList<String>();
       int i = 0;
-      System.out.println("\nNormal Names " + (System.nanoTime()-startTime)/1000000.0 +" \n");
+      // System.out.println("\nNormal Names " + (System.nanoTime()-startTime)/1000000.0 +" \n");
       while(passReader.hasNext())
       {
         String[] tokens = passReader.nextLine().split(":");
@@ -33,7 +33,7 @@ class PasswordCrack
         fname.add(name[0]);
         lname.add(name[1]);
 
-        if(checkPassword(salts.get(i), encryptions.get(i), name[0]))
+        if(checkPassword(startTime, salts.get(i), encryptions.get(i), name[0]))
         {
           encryptions.remove(i);
           salts.remove(i);
@@ -41,7 +41,7 @@ class PasswordCrack
           lname.remove(i);
           i--;
         }
-        else if (checkPassword(salts.get(i), encryptions.get(i), name[1]))
+        else if (checkPassword(startTime, salts.get(i), encryptions.get(i), name[1]))
         {
           encryptions.remove(i);
           salts.remove(i);
@@ -54,97 +54,97 @@ class PasswordCrack
       }
 
       // System.out.println("\nNormal Dictionary " + (System.nanoTime()-startTime)/1000000.0 +" \n");
-      // try(Scanner dictReader = new Scanner(new File(args[0])))
-      // {
-      //   while(dictReader.hasNext())
-      //   {
-      //     String word = dictReader.next();
-      //     for(i = 0; i < encryptions.size(); i++)
-      //     {
-      //       if(checkPassword(salts.get(i), encryptions.get(i), word))
-      //       {
-      //         encryptions.remove(i);
-      //         salts.remove(i);
-      //         fname.remove(i);
-      //         lname.remove(i);
-      //         i--;
-      //       }
-      //     }
-      //   }
-      // } catch (Exception e) {
-      //   System.out.println(e);
-      // }
+      try(Scanner dictReader = new Scanner(new File(args[0])))
+      {
+        while(dictReader.hasNext())
+        {
+          String word = dictReader.next();
+          for(i = 0; i < encryptions.size(); i++)
+          {
+            if(checkPassword(startTime, salts.get(i), encryptions.get(i), word))
+            {
+              encryptions.remove(i);
+              salts.remove(i);
+              fname.remove(i);
+              lname.remove(i);
+              i--;
+            }
+          }
+        }
+      } catch (Exception e) {
+        System.out.println(e);
+      }
 
       // System.out.println("\nMangle Names " + (System.nanoTime()-startTime)/1000000.0 +" \n");
-      // for(i = 0; i < encryptions.size(); i++)
-      // {
-      //   guesses = new ArrayList<String>();
-      //   preappend(fname.get(i));
-      //   deleteFirst(fname.get(i));
-      //   deleteLast(fname.get(i));
-      //   reverseString(fname.get(i));
-      //   capitalize(fname.get(i));
-      //   duplicate(fname.get(i));
-      //   toggle(fname.get(i));
+      for(i = 0; i < encryptions.size(); i++)
+      {
+        guesses = new ArrayList<String>();
+        preappend(fname.get(i));
+        deleteFirst(fname.get(i));
+        deleteLast(fname.get(i));
+        reverseString(fname.get(i));
+        capitalize(fname.get(i));
+        duplicate(fname.get(i));
+        toggle(fname.get(i));
 
-      //   preappend(lname.get(i));
-      //   deleteFirst(lname.get(i));
-      //   deleteLast(lname.get(i));
-      //   reverseString(lname.get(i));
-      //   capitalize(lname.get(i));
-      //   duplicate(lname.get(i));
-      //   toggle(lname.get(i));
+        preappend(lname.get(i));
+        deleteFirst(lname.get(i));
+        deleteLast(lname.get(i));
+        reverseString(lname.get(i));
+        capitalize(lname.get(i));
+        duplicate(lname.get(i));
+        toggle(lname.get(i));
 
 
-      //   for(String guess: guesses)
-      //   {
-      //     if(checkPassword(salts.get(i), encryptions.get(i), guess))
-      //     {
-      //       encryptions.remove(i);
-      //       salts.remove(i);
-      //       fname.remove(i);
-      //       lname.remove(i);
-      //       i--;
-      //       break;
-      //     }
-      //   }
-      // }
+        for(String guess: guesses)
+        {
+          if(checkPassword(startTime, salts.get(i), encryptions.get(i), guess))
+          {
+            encryptions.remove(i);
+            salts.remove(i);
+            fname.remove(i);
+            lname.remove(i);
+            i--;
+            break;
+          }
+        }
+      }
 
 
 
       // System.out.println("\nMangle Dictionary " + (System.nanoTime()-startTime)/1000000.0 +" \n");
-      // try(Scanner dictReader = new Scanner(new File(args[0])))
-      // {
-      //   while(dictReader.hasNext())
-      //   {
-      //     String word = dictReader.next();
-      //     guesses = new ArrayList<String>();
+      try(Scanner dictReader = new Scanner(new File(args[0])))
+      {
+        while(dictReader.hasNext())
+        {
+          String word = dictReader.next();
+          guesses.clear();
 
-      //     preappend(word);
-      //     deleteFirst(word);
-      //     deleteLast(word);
-      //     reverseString(word);
-      //     capitalize(word);
-      //     duplicate(word);
-      //     toggle(word);
-      //     for(String guess: guesses)
-      //     {
-      //       for(i = 0; i < encryptions.size(); i++)
-      //       {
-      //         if(checkPassword(salts.get(i), encryptions.get(i), guess))
-      //         {
-      //           encryptions.remove(i);
-      //           salts.remove(i);
-      //           fname.remove(i);
-      //           lname.remove(i);
-      //           i--;
-      //         }
-      //       }
-      //     }
-      //   }
-      // } catch (Exception e) {
-      //   System.out.println(e);
-      // }
+          preappend(word);
+          deleteFirst(word);
+          deleteLast(word);
+          reverseString(word);
+          capitalize(word);
+          duplicate(word);
+          toggle(word);
+          for(String guess: guesses)
+          {
+            for(i = 0; i < encryptions.size(); i++)
+            {
+              if(checkPassword(startTime, salts.get(i), encryptions.get(i), guess))
+              {
+                encryptions.remove(i);
+                salts.remove(i);
+                fname.remove(i);
+                lname.remove(i);
+                i--;
+              }
+            }
+          }
+        }
+      } catch (Exception e) {
+        System.out.println(e);
+      }
 
       System.out.println("\nDouble Mangle Names " + (System.nanoTime()-startTime)/1000000.0 +" \n");
       for(i = 0; i < encryptions.size(); i++)
@@ -180,7 +180,7 @@ class PasswordCrack
 
         for(String guess: guesses)
         {
-          if(checkPassword(salts.get(i), encryptions.get(i), guess))
+          if(checkPassword(startTime, salts.get(i), encryptions.get(i), guess))
           {
             encryptions.remove(i);
             salts.remove(i);
@@ -192,7 +192,7 @@ class PasswordCrack
         }
       }
 
-      System.out.println("\nDouble Mangle Dictionary " + (System.nanoTime()-startTime)/1000000.0 +" \n");
+      // System.out.println("\nDouble Mangle Dictionary " + (System.nanoTime()-startTime)/1000000.0 +" \n");
       try(Scanner dictReader = new Scanner(new File(args[0])))
       {
         int time = 0;
@@ -200,8 +200,6 @@ class PasswordCrack
         {
           String word = dictReader.next();
           guesses = new ArrayList<String>();
-          if(time++ % 10 == 0)
-            System.out.println(word + ": "+ (System.nanoTime()-startTime)/1000000.0 +" \n");
 
           preappend(word);
           deleteFirst(word);
@@ -228,10 +226,7 @@ class PasswordCrack
           {
             for(i = 0; i < encryptions.size(); i++)
             {
-
-
-
-              if(checkPassword(salts.get(i), encryptions.get(i), guess))
+              if(checkPassword(startTime, salts.get(i), encryptions.get(i), guess))
               {
                 encryptions.remove(i);
                 salts.remove(i);
@@ -245,30 +240,25 @@ class PasswordCrack
       } catch (Exception e) {
         System.out.println(e);
       }
-
-
-
-
-      // jcrypt.crypt(salts.get(0), "pasword");
-
     } 
     catch (Exception e) 
     {
-      System.out.println(e);
-      System.out.println("usage: java PasswordCrack dictionary.txt passwords.txt");
+      // System.out.println(e.pr);
+      e.printStackTrace();
+      // System.out.println("usage: java PasswordCrack dictionary.txt passwords.txt");
       return;
     }
   }
 
-  public static boolean checkPassword(String salt, String encryption, String guess)
+  public static boolean checkPassword(long startTime, String salt, String encryption, String guess)
   {
 
     if(jcrypt.crypt(salt, guess).equals(encryption))
     {
-      System.out.println(encryption + " -> " + guess);
+      System.out.println(encryption + " -> " + guess + " -> "+ (System.nanoTime()-startTime)/1000000000.0);
+      System.out.println("Passwords Left: " + encryptions.size() + "\n");
       return true;
     }
-    // System.out.println(encryption + " -> " + jcrypt.crypt(salt, guess));
     return false; 
   }
 
