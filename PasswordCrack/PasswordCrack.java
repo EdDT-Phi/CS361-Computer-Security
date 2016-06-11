@@ -1,7 +1,7 @@
 import java.util.*;
 import java.io.*;
 
-class PasswordCrack 
+class PasswordCrack
 {
 
   public static ArrayList<String> guesses;
@@ -9,7 +9,7 @@ class PasswordCrack
   public static ArrayList<String> salts = new ArrayList<String>();
   public static ArrayList<String> fname = new ArrayList<String>();
   public static ArrayList<String> lname = new ArrayList<String>();
-  public static void main(String[] args) 
+  public static void main(String[] args)
   {
     if(args.length != 2) {
       System.out.println("usage: java PasswordCrack dictionary.txt passwords.txt");
@@ -18,7 +18,7 @@ class PasswordCrack
     long startTime = System.nanoTime();
 
     try(
-      Scanner passReader = new Scanner(new File(args[1]))) 
+      Scanner passReader = new Scanner(new File(args[1])))
     {
 
       int i = 0;
@@ -26,7 +26,7 @@ class PasswordCrack
       while(passReader.hasNext())
       {
         String[] tokens = passReader.nextLine().split(":");
-        
+
         encryptions.add(tokens[1]);
         salts.add(tokens[1].substring(0, 2));
         String[] name = tokens[4].toLowerCase().split(" ");
@@ -156,7 +156,7 @@ class PasswordCrack
           String word = dictReader.next();
           guesses.clear();
 
-          
+
           reverseString(word);
           mangles(word);
           toggle(word);
@@ -293,8 +293,8 @@ class PasswordCrack
       } catch (Exception e) {
         System.out.println(e);
       }
-    } 
-    catch (Exception e) 
+    }
+    catch (Exception e)
     {
       // System.out.println(e.pr);
       e.printStackTrace();
@@ -312,7 +312,7 @@ class PasswordCrack
       System.out.println("Passwords Left: " + encryptions.size() + "\n");
       return true;
     }
-    return false; 
+    return false;
   }
 
 
