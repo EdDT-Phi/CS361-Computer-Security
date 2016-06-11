@@ -1,46 +1,47 @@
 import java.util.*;
 import java.io.*;
 import java.lang.*;
+import java.nio.file.Files;
 
 class AES {
 
    private static final boolean DEBUG = false;
 
-   final static int[][] byteSubs = {
-      {0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76},
-      {0xCA, 0x82, 0xC9, 0x7D, 0xFA, 0x59, 0x47, 0xF0, 0xAD, 0xD4, 0xA2, 0xAF, 0x9C, 0xA4, 0x72, 0xC0},
-      {0xB7, 0xFD, 0x93, 0x26, 0x36, 0x3F, 0xF7, 0xCC, 0x34, 0xA5, 0xE5, 0xF1, 0x71, 0xD8, 0x31, 0x15},
-      {0x04, 0xC7, 0x23, 0xC3, 0x18, 0x96, 0x05, 0x9A, 0x07, 0x12, 0x80, 0xE2, 0xEB, 0x27, 0xB2, 0x75},
-      {0x09, 0x83, 0x2C, 0x1A, 0x1B, 0x6E, 0x5A, 0xA0, 0x52, 0x3B, 0xD6, 0xB3, 0x29, 0xE3, 0x2F, 0x84},
-      {0x53, 0xD1, 0x00, 0xED, 0x20, 0xFC, 0xB1, 0x5B, 0x6A, 0xCB, 0xBE, 0x39, 0x4A, 0x4C, 0x58, 0xCF},
-      {0xD0, 0xEF, 0xAA, 0xFB, 0x43, 0x4D, 0x33, 0x85, 0x45, 0xF9, 0x02, 0x7F, 0x50, 0x3C, 0x9F, 0xA8},
-      {0x51, 0xA3, 0x40, 0x8F, 0x92, 0x9D, 0x38, 0xF5, 0xBC, 0xB6, 0xDA, 0x21, 0x10, 0xFF, 0xF3, 0xD2},
-      {0xCD, 0x0C, 0x13, 0xEC, 0x5F, 0x97, 0x44, 0x17, 0xC4, 0xA7, 0x7E, 0x3D, 0x64, 0x5D, 0x19, 0x73},
-      {0x60, 0x81, 0x4F, 0xDC, 0x22, 0x2A, 0x90, 0x88, 0x46, 0xEE, 0xB8, 0x14, 0xDE, 0x5E, 0x0B, 0xDB},
-      {0xE0, 0x32, 0x3A, 0x0A, 0x49, 0x06, 0x24, 0x5C, 0xC2, 0xD3, 0xAC, 0x62, 0x91, 0x95, 0xE4, 0x79},
-      {0xE7, 0xC8, 0x37, 0x6D, 0x8D, 0xD5, 0x4E, 0xA9, 0x6C, 0x56, 0xF4, 0xEA, 0x65, 0x7A, 0xAE, 0x08},
-      {0xBA, 0x78, 0x25, 0x2E, 0x1C, 0xA6, 0xB4, 0xC6, 0xE8, 0xDD, 0x74, 0x1F, 0x4B, 0xBD, 0x8B, 0x8A},
-      {0x70, 0x3E, 0xB5, 0x66, 0x48, 0x03, 0xF6, 0x0E, 0x61, 0x35, 0x57, 0xB9, 0x86, 0xC1, 0x1D, 0x9E},
-      {0xE1, 0xF8, 0x98, 0x11, 0x69, 0xD9, 0x8E, 0x94, 0x9B, 0x1E, 0x87, 0xE9, 0xCE, 0x55, 0x28, 0xDF},
-      {0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16}};
+   final static byte[][] byteSubs = {
+      {(byte) 0x63, (byte) 0x7C, (byte) 0x77, (byte) 0x7B, (byte) 0xF2, (byte) 0x6B, (byte) 0x6F, (byte) 0xC5, (byte) 0x30, (byte) 0x01, (byte) 0x67, (byte) 0x2B, (byte) 0xFE, (byte) 0xD7, (byte) 0xAB, (byte) 0x76},
+      {(byte) 0xCA, (byte) 0x82, (byte) 0xC9, (byte) 0x7D, (byte) 0xFA, (byte) 0x59, (byte) 0x47, (byte) 0xF0, (byte) 0xAD, (byte) 0xD4, (byte) 0xA2, (byte) 0xAF, (byte) 0x9C, (byte) 0xA4, (byte) 0x72, (byte) 0xC0},
+      {(byte) 0xB7, (byte) 0xFD, (byte) 0x93, (byte) 0x26, (byte) 0x36, (byte) 0x3F, (byte) 0xF7, (byte) 0xCC, (byte) 0x34, (byte) 0xA5, (byte) 0xE5, (byte) 0xF1, (byte) 0x71, (byte) 0xD8, (byte) 0x31, (byte) 0x15},
+      {(byte) 0x04, (byte) 0xC7, (byte) 0x23, (byte) 0xC3, (byte) 0x18, (byte) 0x96, (byte) 0x05, (byte) 0x9A, (byte) 0x07, (byte) 0x12, (byte) 0x80, (byte) 0xE2, (byte) 0xEB, (byte) 0x27, (byte) 0xB2, (byte) 0x75},
+      {(byte) 0x09, (byte) 0x83, (byte) 0x2C, (byte) 0x1A, (byte) 0x1B, (byte) 0x6E, (byte) 0x5A, (byte) 0xA0, (byte) 0x52, (byte) 0x3B, (byte) 0xD6, (byte) 0xB3, (byte) 0x29, (byte) 0xE3, (byte) 0x2F, (byte) 0x84},
+      {(byte) 0x53, (byte) 0xD1, (byte) 0x00, (byte) 0xED, (byte) 0x20, (byte) 0xFC, (byte) 0xB1, (byte) 0x5B, (byte) 0x6A, (byte) 0xCB, (byte) 0xBE, (byte) 0x39, (byte) 0x4A, (byte) 0x4C, (byte) 0x58, (byte) 0xCF},
+      {(byte) 0xD0, (byte) 0xEF, (byte) 0xAA, (byte) 0xFB, (byte) 0x43, (byte) 0x4D, (byte) 0x33, (byte) 0x85, (byte) 0x45, (byte) 0xF9, (byte) 0x02, (byte) 0x7F, (byte) 0x50, (byte) 0x3C, (byte) 0x9F, (byte) 0xA8},
+      {(byte) 0x51, (byte) 0xA3, (byte) 0x40, (byte) 0x8F, (byte) 0x92, (byte) 0x9D, (byte) 0x38, (byte) 0xF5, (byte) 0xBC, (byte) 0xB6, (byte) 0xDA, (byte) 0x21, (byte) 0x10, (byte) 0xFF, (byte) 0xF3, (byte) 0xD2},
+      {(byte) 0xCD, (byte) 0x0C, (byte) 0x13, (byte) 0xEC, (byte) 0x5F, (byte) 0x97, (byte) 0x44, (byte) 0x17, (byte) 0xC4, (byte) 0xA7, (byte) 0x7E, (byte) 0x3D, (byte) 0x64, (byte) 0x5D, (byte) 0x19, (byte) 0x73},
+      {(byte) 0x60, (byte) 0x81, (byte) 0x4F, (byte) 0xDC, (byte) 0x22, (byte) 0x2A, (byte) 0x90, (byte) 0x88, (byte) 0x46, (byte) 0xEE, (byte) 0xB8, (byte) 0x14, (byte) 0xDE, (byte) 0x5E, (byte) 0x0B, (byte) 0xDB},
+      {(byte) 0xE0, (byte) 0x32, (byte) 0x3A, (byte) 0x0A, (byte) 0x49, (byte) 0x06, (byte) 0x24, (byte) 0x5C, (byte) 0xC2, (byte) 0xD3, (byte) 0xAC, (byte) 0x62, (byte) 0x91, (byte) 0x95, (byte) 0xE4, (byte) 0x79},
+      {(byte) 0xE7, (byte) 0xC8, (byte) 0x37, (byte) 0x6D, (byte) 0x8D, (byte) 0xD5, (byte) 0x4E, (byte) 0xA9, (byte) 0x6C, (byte) 0x56, (byte) 0xF4, (byte) 0xEA, (byte) 0x65, (byte) 0x7A, (byte) 0xAE, (byte) 0x08},
+      {(byte) 0xBA, (byte) 0x78, (byte) 0x25, (byte) 0x2E, (byte) 0x1C, (byte) 0xA6, (byte) 0xB4, (byte) 0xC6, (byte) 0xE8, (byte) 0xDD, (byte) 0x74, (byte) 0x1F, (byte) 0x4B, (byte) 0xBD, (byte) 0x8B, (byte) 0x8A},
+      {(byte) 0x70, (byte) 0x3E, (byte) 0xB5, (byte) 0x66, (byte) 0x48, (byte) 0x03, (byte) 0xF6, (byte) 0x0E, (byte) 0x61, (byte) 0x35, (byte) 0x57, (byte) 0xB9, (byte) 0x86, (byte) 0xC1, (byte) 0x1D, (byte) 0x9E},
+      {(byte) 0xE1, (byte) 0xF8, (byte) 0x98, (byte) 0x11, (byte) 0x69, (byte) 0xD9, (byte) 0x8E, (byte) 0x94, (byte) 0x9B, (byte) 0x1E, (byte) 0x87, (byte) 0xE9, (byte) 0xCE, (byte) 0x55, (byte) 0x28, (byte) 0xDF},
+      {(byte) 0x8C, (byte) 0xA1, (byte) 0x89, (byte) 0x0D, (byte) 0xBF, (byte) 0xE6, (byte) 0x42, (byte) 0x68, (byte) 0x41, (byte) 0x99, (byte) 0x2D, (byte) 0x0F, (byte) 0xB0, (byte) 0x54, (byte) 0xBB, (byte) 0x16}};
 
-   final static int[][] invByteSubs = {
-      {0x52, 0x09, 0x6A, 0xD5, 0x30, 0x36, 0xA5, 0x38, 0xBF, 0x40, 0xA3, 0x9E, 0x81, 0xF3, 0xD7, 0xFB},
-      {0x7C, 0xE3, 0x39, 0x82, 0x9B, 0x2F, 0xFF, 0x87, 0x34, 0x8E, 0x43, 0x44, 0xC4, 0xDE, 0xE9, 0xCB},
-      {0x54, 0x7B, 0x94, 0x32, 0xA6, 0xC2, 0x23, 0x3D, 0xEE, 0x4C, 0x95, 0x0B, 0x42, 0xFA, 0xC3, 0x4E},
-      {0x08, 0x2E, 0xA1, 0x66, 0x28, 0xD9, 0x24, 0xB2, 0x76, 0x5B, 0xA2, 0x49, 0x6D, 0x8B, 0xD1, 0x25},
-      {0x72, 0xF8, 0xF6, 0x64, 0x86, 0x68, 0x98, 0x16, 0xD4, 0xA4, 0x5C, 0xCC, 0x5D, 0x65, 0xB6, 0x92},
-      {0x6C, 0x70, 0x48, 0x50, 0xFD, 0xED, 0xB9, 0xDA, 0x5E, 0x15, 0x46, 0x57, 0xA7, 0x8D, 0x9D, 0x84},
-      {0x90, 0xD8, 0xAB, 0x00, 0x8C, 0xBC, 0xD3, 0x0A, 0xF7, 0xE4, 0x58, 0x05, 0xB8, 0xB3, 0x45, 0x06},
-      {0xD0, 0x2C, 0x1E, 0x8F, 0xCA, 0x3F, 0x0F, 0x02, 0xC1, 0xAF, 0xBD, 0x03, 0x01, 0x13, 0x8A, 0x6B},
-      {0x3A, 0x91, 0x11, 0x41, 0x4F, 0x67, 0xDC, 0xEA, 0x97, 0xF2, 0xCF, 0xCE, 0xF0, 0xB4, 0xE6, 0x73},
-      {0x96, 0xAC, 0x74, 0x22, 0xE7, 0xAD, 0x35, 0x85, 0xE2, 0xF9, 0x37, 0xE8, 0x1C, 0x75, 0xDF, 0x6E},
-      {0x47, 0xF1, 0x1A, 0x71, 0x1D, 0x29, 0xC5, 0x89, 0x6F, 0xB7, 0x62, 0x0E, 0xAA, 0x18, 0xBE, 0x1B},
-      {0xFC, 0x56, 0x3E, 0x4B, 0xC6, 0xD2, 0x79, 0x20, 0x9A, 0xDB, 0xC0, 0xFE, 0x78, 0xCD, 0x5A, 0xF4},
-      {0x1F, 0xDD, 0xA8, 0x33, 0x88, 0x07, 0xC7, 0x31, 0xB1, 0x12, 0x10, 0x59, 0x27, 0x80, 0xEC, 0x5F},
-      {0x60, 0x51, 0x7F, 0xA9, 0x19, 0xB5, 0x4A, 0x0D, 0x2D, 0xE5, 0x7A, 0x9F, 0x93, 0xC9, 0x9C, 0xEF},
-      {0xA0, 0xE0, 0x3B, 0x4D, 0xAE, 0x2A, 0xF5, 0xB0, 0xC8, 0xEB, 0xBB, 0x3C, 0x83, 0x53, 0x99, 0x61},
-      {0x17, 0x2B, 0x04, 0x7E, 0xBA, 0x77, 0xD6, 0x26, 0xE1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0C, 0x7D}};
+   final static byte[][] invByteSubs = {
+      {(byte) 0x52, (byte) 0x09, (byte) 0x6A, (byte) 0xD5, (byte) 0x30, (byte) 0x36, (byte) 0xA5, (byte) 0x38, (byte) 0xBF, (byte) 0x40, (byte) 0xA3, (byte) 0x9E, (byte) 0x81, (byte) 0xF3, (byte) 0xD7, (byte) 0xFB},
+      {(byte) 0x7C, (byte) 0xE3, (byte) 0x39, (byte) 0x82, (byte) 0x9B, (byte) 0x2F, (byte) 0xFF, (byte) 0x87, (byte) 0x34, (byte) 0x8E, (byte) 0x43, (byte) 0x44, (byte) 0xC4, (byte) 0xDE, (byte) 0xE9, (byte) 0xCB},
+      {(byte) 0x54, (byte) 0x7B, (byte) 0x94, (byte) 0x32, (byte) 0xA6, (byte) 0xC2, (byte) 0x23, (byte) 0x3D, (byte) 0xEE, (byte) 0x4C, (byte) 0x95, (byte) 0x0B, (byte) 0x42, (byte) 0xFA, (byte) 0xC3, (byte) 0x4E},
+      {(byte) 0x08, (byte) 0x2E, (byte) 0xA1, (byte) 0x66, (byte) 0x28, (byte) 0xD9, (byte) 0x24, (byte) 0xB2, (byte) 0x76, (byte) 0x5B, (byte) 0xA2, (byte) 0x49, (byte) 0x6D, (byte) 0x8B, (byte) 0xD1, (byte) 0x25},
+      {(byte) 0x72, (byte) 0xF8, (byte) 0xF6, (byte) 0x64, (byte) 0x86, (byte) 0x68, (byte) 0x98, (byte) 0x16, (byte) 0xD4, (byte) 0xA4, (byte) 0x5C, (byte) 0xCC, (byte) 0x5D, (byte) 0x65, (byte) 0xB6, (byte) 0x92},
+      {(byte) 0x6C, (byte) 0x70, (byte) 0x48, (byte) 0x50, (byte) 0xFD, (byte) 0xED, (byte) 0xB9, (byte) 0xDA, (byte) 0x5E, (byte) 0x15, (byte) 0x46, (byte) 0x57, (byte) 0xA7, (byte) 0x8D, (byte) 0x9D, (byte) 0x84},
+      {(byte) 0x90, (byte) 0xD8, (byte) 0xAB, (byte) 0x00, (byte) 0x8C, (byte) 0xBC, (byte) 0xD3, (byte) 0x0A, (byte) 0xF7, (byte) 0xE4, (byte) 0x58, (byte) 0x05, (byte) 0xB8, (byte) 0xB3, (byte) 0x45, (byte) 0x06},
+      {(byte) 0xD0, (byte) 0x2C, (byte) 0x1E, (byte) 0x8F, (byte) 0xCA, (byte) 0x3F, (byte) 0x0F, (byte) 0x02, (byte) 0xC1, (byte) 0xAF, (byte) 0xBD, (byte) 0x03, (byte) 0x01, (byte) 0x13, (byte) 0x8A, (byte) 0x6B},
+      {(byte) 0x3A, (byte) 0x91, (byte) 0x11, (byte) 0x41, (byte) 0x4F, (byte) 0x67, (byte) 0xDC, (byte) 0xEA, (byte) 0x97, (byte) 0xF2, (byte) 0xCF, (byte) 0xCE, (byte) 0xF0, (byte) 0xB4, (byte) 0xE6, (byte) 0x73},
+      {(byte) 0x96, (byte) 0xAC, (byte) 0x74, (byte) 0x22, (byte) 0xE7, (byte) 0xAD, (byte) 0x35, (byte) 0x85, (byte) 0xE2, (byte) 0xF9, (byte) 0x37, (byte) 0xE8, (byte) 0x1C, (byte) 0x75, (byte) 0xDF, (byte) 0x6E},
+      {(byte) 0x47, (byte) 0xF1, (byte) 0x1A, (byte) 0x71, (byte) 0x1D, (byte) 0x29, (byte) 0xC5, (byte) 0x89, (byte) 0x6F, (byte) 0xB7, (byte) 0x62, (byte) 0x0E, (byte) 0xAA, (byte) 0x18, (byte) 0xBE, (byte) 0x1B},
+      {(byte) 0xFC, (byte) 0x56, (byte) 0x3E, (byte) 0x4B, (byte) 0xC6, (byte) 0xD2, (byte) 0x79, (byte) 0x20, (byte) 0x9A, (byte) 0xDB, (byte) 0xC0, (byte) 0xFE, (byte) 0x78, (byte) 0xCD, (byte) 0x5A, (byte) 0xF4},
+      {(byte) 0x1F, (byte) 0xDD, (byte) 0xA8, (byte) 0x33, (byte) 0x88, (byte) 0x07, (byte) 0xC7, (byte) 0x31, (byte) 0xB1, (byte) 0x12, (byte) 0x10, (byte) 0x59, (byte) 0x27, (byte) 0x80, (byte) 0xEC, (byte) 0x5F},
+      {(byte) 0x60, (byte) 0x51, (byte) 0x7F, (byte) 0xA9, (byte) 0x19, (byte) 0xB5, (byte) 0x4A, (byte) 0x0D, (byte) 0x2D, (byte) 0xE5, (byte) 0x7A, (byte) 0x9F, (byte) 0x93, (byte) 0xC9, (byte) 0x9C, (byte) 0xEF},
+      {(byte) 0xA0, (byte) 0xE0, (byte) 0x3B, (byte) 0x4D, (byte) 0xAE, (byte) 0x2A, (byte) 0xF5, (byte) 0xB0, (byte) 0xC8, (byte) 0xEB, (byte) 0xBB, (byte) 0x3C, (byte) 0x83, (byte) 0x53, (byte) 0x99, (byte) 0x61},
+      {(byte) 0x17, (byte) 0x2B, (byte) 0x04, (byte) 0x7E, (byte) 0xBA, (byte) 0x77, (byte) 0xD6, (byte) 0x26, (byte) 0xE1, (byte) 0x69, (byte) 0x14, (byte) 0x63, (byte) 0x55, (byte) 0x21, (byte) 0x0C, (byte) 0x7D}};
 
    final static int[] LogTable = {
       0,   0,  25,   1,  50,   2,  26, 198,  75, 199,  27, 104,  51, 238, 223,   3,
@@ -78,22 +79,23 @@ class AES {
       18,  54,  90, 238,  41, 123, 141, 140, 143, 138, 133, 148, 167, 242,  13,  23,
       57,  75, 221, 124, 132, 151, 162, 253,  28,  36, 108, 180, 199, 82, 246,   1};
 
-   final static int[][] rcon = {
-      {0x01, 0, 0, 0},{0x02, 0, 0, 0},{0x04, 0, 0, 0},{0x08, 0, 0, 0},{0x10, 0, 0, 0},
-      {0x20, 0, 0, 0},{0x40, 0, 0, 0},{0x80, 0, 0, 0},{0x1b, 0, 0, 0},{0x36, 0, 0, 0},
-      {0x6c, 0, 0, 0},{0xd8, 0, 0, 0},{0xab, 0, 0, 0},{0x4d, 0, 0, 0},{0x9a, 0, 0, 0}};
+   final static byte[][] rcon = {
+      {(byte) 0x01, 0, 0, 0},{(byte) 0x02, 0, 0, 0},{(byte) 0x04, 0, 0, 0},{(byte) 0x08, 0, 0, 0},{(byte) 0x10, 0, 0, 0},
+      {(byte) 0x20, 0, 0, 0},{(byte) 0x40, 0, 0, 0},{(byte) 0x80, 0, 0, 0},{(byte) 0x1b, 0, 0, 0},{(byte) 0x36, 0, 0, 0},
+      {(byte) 0x6c, 0, 0, 0},{(byte) 0xd8, 0, 0, 0},{(byte) 0xab, 0, 0, 0},{(byte) 0x4d, 0, 0, 0},{(byte) 0x9a, 0, 0, 0}};
 
 
+   static ByteArrayInputStream inputReader;
    public static void main(String[] args) {
-      if(args.length != 3) {
-         System.out.println("Usage: java AES option keyFile inputFile");
+      if(args.length != 2) {
+         System.out.println("Usage: java AES option inputFile");
          return;
       }
 
       boolean encode;
       String stringKey;
-      Scanner inputFile;
-      String outputFileName = args[2];
+      // Scanner inputFile;
+      String outputFileName = args[1];
 
 
       if (args[0].toLowerCase().equals("e")) {
@@ -108,28 +110,36 @@ class AES {
       }
 
       try{
-         Scanner keyFile = new Scanner(new File(args[1]));
+         Scanner keyFile = new Scanner(System.in);
+         System.out.print("Enter key: ");
          stringKey = keyFile.next();
+
+         if(stringKey.length() < 32)
+         {
+            System.out.printf("That is an invalid key\n");
+            return;
+         }
+
          keyFile.close();
       } catch (Exception e) {
-         System.out.printf("%s is an invalid key file\n", args[1]);
+         System.out.printf("There was a problem\n");
          return;
       }
 
       try{
-         inputFile = new Scanner(new File(args[2]));
+         inputReader = new ByteArrayInputStream(Files.readAllBytes(new File(args[1]).toPath()));
       } catch (Exception e) {
-         System.out.printf("%s is an invalid input file\n", args[2]);
+         System.out.printf("%s is an invalid input file\n", args[1]);
          return;
       }
 
       // debug("key length: " + key.length() + "\n");
 
-      int[][] key = new int[60][4];
-      int[][] block = new int[4][4];
+      byte[][] key = new byte[60][4];
+      byte[][] block = new byte[4][4];
 
-      for(int i = 0; i < stringKey.length()/2; ++i) {
-         key[i/4][i%4] = Integer.decode("0x" + stringKey.substring(i*2 , i*2 + 2).toLowerCase());
+      for(int i = 0; i < 32; ++i) {
+         key[i/4][i%4] = (byte) stringKey.charAt(i);//Integer.decode("0x" + stringKey.substring(i*2 , i*2 + 2).toLowerCase());
       }
 
       debug("CipherKey:");
@@ -142,13 +152,18 @@ class AES {
       String input;
       long startTime = System.nanoTime();
       int fileSize = 0;
-      try(BufferedWriter bw = new BufferedWriter(new FileWriter(new File(outputFileName)))) {
-         while(inputFile.hasNext()) {
-            input = inputFile.next();
+      try(FileOutputStream fos = new FileOutputStream(new File(outputFileName))) {
+         int read;
+         while((read = inputReader.available()) > 0) {
+
+
+            // input = inputFile.next();
             fileSize += 16; // bytes
-            for(int i = 0; i < 16; ++i) {
-               block[i/4][i%4] = i < input.length()/2 ?  Integer.decode("0x" + input.substring(i*2, i*2 + 2).toLowerCase()) : 0;
-            }
+            // for(int i = 0; i < 16; ++i) {
+            //    block[i/4][i%4] = i < input.length() ? (byte) input.charAt(i) : 0; //Integer.decode("0x" + input.substring(i*2, i*2 + 2).toLowerCase()) : 0;
+            // }
+
+            block = getNewBlock();
 
             if (encode) {
                debug("Plaintext:");
@@ -165,11 +180,19 @@ class AES {
                decode(key, block);
                debug("Decryption of Ciphertext:");
                printArr(block, 4, " ", false);
-               debug("\nDecryption of Ciphertext:");
+               // debug("\nDecryption of Ciphertext:");
             }
 
-            bw.append(printAsLine(block) + "\n");
+
+            // fos.write(byteLine(block), 0, Math.min(read, 16));
+            fos.write(block[0]);
+            fos.write(block[1]);
+            fos.write(block[2]);
+            fos.write(block[3]);
          }
+
+         fos.flush();
+         inputReader.close();
       } catch (Exception ignore){
          System.out.println("Something went wrong");
       }
@@ -178,10 +201,42 @@ class AES {
       System.out.printf("FileSize: %d bytes\n", fileSize);
       System.out.printf("Throughput: %f MB/sec\n", fileSize/(double) duration * 1000);
 
-      inputFile.close();
    }
 
-   public static void decode(int[][] key, int[][] block) {
+   public static byte[] byteLine(byte[][] block)
+   {
+      byte[] result = new byte[16];
+      for(int i = 0; i < 4; i++)
+      {
+         for(int j = 0; j < 4; j++)
+         {
+            result[i*4+j] = block[i][j];
+         }
+      }
+      return result;
+   }
+
+   public static byte[][] getNewBlock()
+   {
+      byte[][] result = new byte[4][4];
+      for(int i = 0; i < 4; i++)
+      {
+         for(int j = 0; j < 4; j++)
+         {
+            if(inputReader.available() > 0)
+            {
+               result[i][j] = (byte) inputReader.read();
+            }
+            else
+            {
+               result[i][j] = 0;
+            }
+         }
+      }
+      return result;
+   }
+
+   public static void decode(byte[][] key, byte[][] block) {
       int round = 14;
       addRoundKey(block, round--, key);
       invShiftRows(block);
@@ -197,12 +252,12 @@ class AES {
       addRoundKey(block, round--, key);
    }
 
-   public static void encode(int[][] key, int[][] block) {
+   public static void encode(byte[][] key, byte[][] block) {
       int round = 0;
       addRoundKey(block, round++, key);
 
       for(int i = 0; i < 13; i++) {
-         for(int[] row: block)
+         for(byte[] row: block)
             subBytes(row);
 
          debug("After subBytes:");
@@ -213,14 +268,17 @@ class AES {
          addRoundKey(block, round++, key);
       }
 
-      for(int[] row: block)
+      for(byte[] row: block)
             subBytes(row);
+
+      debug("After subBytes:");
+      printAsLine(block);
 
       shiftRows(block);
       addRoundKey(block, round++, key);
    }
 
-   public static void keyExpansion(int[][] key){
+   public static void keyExpansion(byte[][] key){
       int val = 0;
       for(int i = 8; i < key.length; i ++) {
          if(i % 8 == 0) {
@@ -235,6 +293,8 @@ class AES {
             // printArr(key, 20);
             XOR(key[i], key[i - 8]);
 
+            // printArr(key, 32, " ", false);
+
          } else {
             key[i] = Arrays.copyOf(key[i-1], key[i-1].length);
             XOR(key[i], key[i - 8]);
@@ -242,7 +302,7 @@ class AES {
       }
    }
 
-   public static void addRoundKey(int[][] block, int start, int[][] key) {
+   public static void addRoundKey(byte[][] block, int start, byte[][] key) {
       for(int i = 0; i < 4; i++) {
          XOR(block[i], key[start*4 + i]);
       }
@@ -250,8 +310,8 @@ class AES {
       printAsLine(block);
    }
 
-   public static int[] rotate(int[] word, int i) {
-      int[] copy = new int[4];
+   public static byte[] rotate(byte[] word, int i) {
+      byte[] copy = new byte[4];
       copy[0] = word[(0 + i)%4];
       copy[1] = word[(1 + i)%4];
       copy[2] = word[(2 + i)%4];
@@ -259,8 +319,8 @@ class AES {
       return copy;
    }
 
-   public static void invShiftRows(int[][] block) {
-      int temp = block[0][1];
+   public static void invShiftRows(byte[][] block) {
+      byte temp = block[0][1];
       block[0][1] = block[3][1];
       block[3][1] = block[2][1];
       block[2][1] = block[1][1];
@@ -284,8 +344,8 @@ class AES {
       printAsLine(block);
    }
 
-   public static void shiftRows(int[][] block) {
-      int temp = block[0][1];
+   public static void shiftRows(byte[][] block) {
+      byte temp = block[0][1];
       block[0][1] = block[1][1];
       block[1][1] = block[2][1];
       block[2][1] = block[3][1];
@@ -309,10 +369,10 @@ class AES {
       printAsLine(block);
    }
 
-   public static void invSubBytes(int[][] block) {
+   public static void invSubBytes(byte[][] block) {
       for(int i = 0; i < 4; i++) {
          for (int j = 0; j < 4; j ++) {
-            block[i][j] = invByteSubs[block[i][j] >> 4][block[i][j] & 0xF];
+            block[i][j] = invByteSubs[(block[i][j] >> 4) & 0xF][block[i][j] & 0xF];
          }
       }
 
@@ -320,28 +380,30 @@ class AES {
       printAsLine(block);
    }
 
-   public static void subBytes(int[] word) {
+   public static void subBytes(byte[] word) {
       for(int i = 0; i < 4; i++) {
-         // System.out.printf("B: %x\n", word[i]);
-         word[i] = byteSubs[word[i] >> 4][word[i] & 0xF];
-         // System.out.printf("A: %x\n", word[i]);
+         // System.out.printf("B: %02X\n", word[i]);
+         // System.out.printf("B: %02X\n", ((int) word[i]) >> 4);
+         // System.out.printf("B: %02X\n", word[i] & 0xF);
+         word[i] = byteSubs[((word[i]) >> 4) & 0xF][word[i] & 0xF];
+         // System.out.printf("A: %02X\n", word[i]);
       }
    }
 
-   public static void XOR(int[] word1, int[] word2) {
+   public static void XOR(byte[] word1, byte[] word2) {
       for(int i = 0; i < 4; i++) {
          word1[i] ^= word2[i];
       }
    }
 
-   private static int mul (int a, int b) {
+   private static byte mul (int a, byte b) {
       int inda = (a < 0) ? (a + 256) : a;
       int indb = (b < 0) ? (b + 256) : b;
 
       if ( (a != 0) && (b != 0) ) {
          int index = LogTable[inda] + LogTable[indb];
          int val = AlogTable[ index % 255 ];
-         return val;
+         return (byte) val;
       } else {
           return 0;
       }
@@ -352,12 +414,12 @@ class AES {
    // the plaintext input but is being modified).  Notice that the state here is defined as an
    // array of bytes.  If your state is an array of integers, you'll have
    // to make adjustments.
-   public static void mixColumns (int[][] block) {
+   public static void mixColumns (byte[][] block) {
    // This is another alternate version of mixColumn, using the
    // logtables to do the computation.
 
       for(int i = 0; i < 4; i++) {
-         int a[] = new int[4];
+         byte a[] = new byte[4];
 
          // note that a is just a copy of st[.][c]
          for (int j = 0; j < 4; j++)
@@ -365,53 +427,54 @@ class AES {
 
          // This is exactly the same as mixColumns1, if
          // the mul columns somehow match the b columns there.
-         block[i][0] = mul(2,a[0]) ^ a[2] ^ a[3] ^ mul(3,a[1]);
-         block[i][1] = mul(2,a[1]) ^ a[3] ^ a[0] ^ mul(3,a[2]);
-         block[i][2] = mul(2,a[2]) ^ a[0] ^ a[1] ^ mul(3,a[3]);
-         block[i][3] = mul(2,a[3]) ^ a[1] ^ a[2] ^ mul(3,a[0]);
+         block[i][0] = (byte) (mul(2,a[0]) ^ a[2] ^ a[3] ^ mul(3,a[1]));
+         block[i][1] = (byte) (mul(2,a[1]) ^ a[3] ^ a[0] ^ mul(3,a[2]));
+         block[i][2] = (byte) (mul(2,a[2]) ^ a[0] ^ a[1] ^ mul(3,a[3]));
+         block[i][3] = (byte) (mul(2,a[3]) ^ a[1] ^ a[2] ^ mul(3,a[0]));
       }
       debug("After mixColumns:");
       printAsLine(block);
    } // mixColumn2
 
-   public static void invMixColumns (int[][] block) {
+   public static void invMixColumns (byte[][] block) {
       for(int i = 0; i < 4; i++) {
-         int a[] = new int[4];
+         byte a[] = new byte[4];
 
          // note that a is just a copy of st[.][c]
          for (int j = 0; j < 4; j++)
              a[j] = block[i][j];
 
-         block[i][0] = mul(0xE,a[0]) ^ mul(0xB,a[1]) ^ mul(0xD, a[2]) ^ mul(0x9,a[3]);
-         block[i][1] = mul(0xE,a[1]) ^ mul(0xB,a[2]) ^ mul(0xD, a[3]) ^ mul(0x9,a[0]);
-         block[i][2] = mul(0xE,a[2]) ^ mul(0xB,a[3]) ^ mul(0xD, a[0]) ^ mul(0x9,a[1]);
-         block[i][3] = mul(0xE,a[3]) ^ mul(0xB,a[0]) ^ mul(0xD, a[1]) ^ mul(0x9,a[2]);
+         block[i][0] = (byte) (mul(0xE,a[0]) ^ mul(0xB,a[1]) ^ mul(0xD, a[2]) ^ mul(0x9,a[3]));
+         block[i][1] = (byte) (mul(0xE,a[1]) ^ mul(0xB,a[2]) ^ mul(0xD, a[3]) ^ mul(0x9,a[0]));
+         block[i][2] = (byte) (mul(0xE,a[2]) ^ mul(0xB,a[3]) ^ mul(0xD, a[0]) ^ mul(0x9,a[1]));
+         block[i][3] = (byte) (mul(0xE,a[3]) ^ mul(0xB,a[0]) ^ mul(0xD, a[1]) ^ mul(0x9,a[2]));
       }
    } // invMixColumn2
 
-   public static String printAsLine(int[][] block) {
+   public static String printAsLine(byte[][] block) {
       StringBuilder out = new StringBuilder();
-      for(int[] row: block) {
-         for(int i: row) {
+      for(byte[] row: block) {
+         for(byte i: row) {
 
             out.append((i<16 ? "0":"") + Integer.toHexString(i).toUpperCase());
-            // System.out.printf("%x", i);
+            if(DEBUG) System.out.printf("%02X", i);
          }
       }
-      debug(out.toString());
+      if(DEBUG) System.out.printf("\n");
+      // debug(out.toString());
       return out.toString();
    }
 
-   public static void printArr(int[][] arr, int n, String delim, boolean force) {
+   public static void printArr(byte[][] arr, int n, String delim, boolean force) {
       if (!force && !DEBUG) return;
       for(int i =0; i < 4; i++) {
          for(int j = 0; j < n; ++j) {
             if(j != 0 && j % 4 == 0)
                System.out.print(" ");
-            if(arr[j][i] < 16) {
-               System.out.printf("0%x%s", arr[j][i], delim);
+            if(arr[j][i] < 0x10) {
+               System.out.printf("%02X%s", arr[j][i], delim);
             } else {
-               System.out.printf("%x%s", arr[j][i], delim);
+               System.out.printf("%02X%s", arr[j][i], delim);
             }
          }
          System.out.println();

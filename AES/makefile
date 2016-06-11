@@ -7,11 +7,11 @@ clean:
 turnin:
 	zip jdt2725_et7226_program5.zip *
 love:
-	java AES e keyFile inputFile
-	cat inputFile.enc
+	java AES e keyFile PrideAndPrejudice
+	# cat PrideAndPrejudice.enc
 babies:
-	java AES d keyFile inputFile.enc
-	cat inputFile.enc.dec
+	java AES d keyFile PrideAndPrejudice.enc
+	# cat PrideAndPrejudice.enc.dec
 all: love babies
 test1:
 	java AES e keyFile bigger

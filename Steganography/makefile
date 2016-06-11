@@ -8,7 +8,7 @@ clean:
 turnin:
 	zip jdt2725_et7226_program3.zip *
 love:
-	java Steganography -E overwerk.png nina.jpg
+	java Steganography -E overwerk.png PrideAndPrejudice
 babies:
 	java Steganography -D overwerk-steg.png nina.out.jpg
 check:
