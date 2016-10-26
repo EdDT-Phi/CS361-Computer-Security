@@ -6,4 +6,4 @@ clean:
 	rm *.out;
 	rm log;
 babies:
-	java SecureSystem instructionList
+	java CovertChannel PrideAndPrejudice

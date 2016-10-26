@@ -11,7 +11,8 @@ public class SecureSystem {
 
 
     public static void main(String args[]) {
-        new SecureSystem("PrideAndPrejudice");
+        if(args.length < 1) System.out.println("Missing file name!");
+        SecureSystem sc = new SecureSystem(args[0]);
         while (scan.hasNext()) {
             rf.executeCommand(parse(scan.nextLine().toLowerCase()));
         }
