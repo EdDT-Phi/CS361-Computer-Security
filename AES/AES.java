@@ -8,7 +8,7 @@ class AES {
    private static final boolean DEBUG = false;
 
    final static byte[][] byteSubs = {
-      {(byte) 0x63, (byte) 0x7C, (byte) 0x77, (byte) 0x7B, (byte) 0xF2, (byte) 0x6B, (byte) 0x6F, (byte) 0xC5, (byte) 0x30, (byte) 0x01, (byte) 0x67, (byte) 0x2B, (byte) 0xFE, (byte) 0xD7, (byte) 0xAB, (byte) 0x76},
+      {0x63, (byte) 0x7C, (byte) 0x77, (byte) 0x7B, (byte) 0xF2, (byte) 0x6B, (byte) 0x6F, (byte) 0xC5, (byte) 0x30, (byte) 0x01, (byte) 0x67, (byte) 0x2B, (byte) 0xFE, (byte) 0xD7, (byte) 0xAB, (byte) 0x76},
       {(byte) 0xCA, (byte) 0x82, (byte) 0xC9, (byte) 0x7D, (byte) 0xFA, (byte) 0x59, (byte) 0x47, (byte) 0xF0, (byte) 0xAD, (byte) 0xD4, (byte) 0xA2, (byte) 0xAF, (byte) 0x9C, (byte) 0xA4, (byte) 0x72, (byte) 0xC0},
       {(byte) 0xB7, (byte) 0xFD, (byte) 0x93, (byte) 0x26, (byte) 0x36, (byte) 0x3F, (byte) 0xF7, (byte) 0xCC, (byte) 0x34, (byte) 0xA5, (byte) 0xE5, (byte) 0xF1, (byte) 0x71, (byte) 0xD8, (byte) 0x31, (byte) 0x15},
       {(byte) 0x04, (byte) 0xC7, (byte) 0x23, (byte) 0xC3, (byte) 0x18, (byte) 0x96, (byte) 0x05, (byte) 0x9A, (byte) 0x07, (byte) 0x12, (byte) 0x80, (byte) 0xE2, (byte) 0xEB, (byte) 0x27, (byte) 0xB2, (byte) 0x75},
@@ -94,7 +94,6 @@ class AES {
 
       boolean encode;
       String stringKey;
-      // Scanner inputFile;
       String outputFileName = args[1];
 
 
@@ -109,18 +108,17 @@ class AES {
          return;
       }
 
-      try{
-         Scanner keyFile = new Scanner(System.in);
+      try(Scanner keyFile = new Scanner(System.in);){
+         
          System.out.print("Enter key: ");
          stringKey = keyFile.next();
 
          if(stringKey.length() < 32)
          {
-            System.out.printf("That is an invalid key\n");
+            System.out.printf("Key is not long enough\n");
             return;
          }
 
-         keyFile.close();
       } catch (Exception e) {
          System.out.printf("There was a problem\n");
          return;
@@ -133,13 +131,13 @@ class AES {
          return;
       }
 
-      // debug("key length: " + key.length() + "\n");
 
       byte[][] key = new byte[60][4];
       byte[][] block = new byte[4][4];
 
+      // convert key to block
       for(int i = 0; i < 32; ++i) {
-         key[i/4][i%4] = (byte) stringKey.charAt(i);//Integer.decode("0x" + stringKey.substring(i*2 , i*2 + 2).toLowerCase());
+         key[i/4][i%4] = (byte) stringKey.charAt(i);
       }
 
       debug("CipherKey:");
@@ -152,16 +150,12 @@ class AES {
       String input;
       long startTime = System.nanoTime();
       int fileSize = 0;
+      System.out.println("Starting process..");
       try(FileOutputStream fos = new FileOutputStream(new File(outputFileName))) {
          int read;
          while((read = inputReader.available()) > 0) {
 
-
-            // input = inputFile.next();
-            fileSize += 16; // bytes
-            // for(int i = 0; i < 16; ++i) {
-            //    block[i/4][i%4] = i < input.length() ? (byte) input.charAt(i) : 0; //Integer.decode("0x" + input.substring(i*2, i*2 + 2).toLowerCase()) : 0;
-            // }
+            fileSize += 16;
 
             block = getNewBlock();
 
@@ -382,11 +376,7 @@ class AES {
 
    public static void subBytes(byte[] word) {
       for(int i = 0; i < 4; i++) {
-         // System.out.printf("B: %02X\n", word[i]);
-         // System.out.printf("B: %02X\n", ((int) word[i]) >> 4);
-         // System.out.printf("B: %02X\n", word[i] & 0xF);
          word[i] = byteSubs[((word[i]) >> 4) & 0xF][word[i] & 0xF];
-         // System.out.printf("A: %02X\n", word[i]);
       }
    }
 
@@ -461,7 +451,6 @@ class AES {
          }
       }
       if(DEBUG) System.out.printf("\n");
-      // debug(out.toString());
       return out.toString();
    }
 
