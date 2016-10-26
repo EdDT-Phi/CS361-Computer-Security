@@ -4,11 +4,19 @@ import java.io.*;
 class PasswordCrack
 {
 
-  public static ArrayList<String> guesses;
+  public static HashSet<String> guesses;
   public static ArrayList<String> encryptions = new ArrayList<String>();
   public static ArrayList<String> salts = new ArrayList<String>();
   public static ArrayList<String> fname = new ArrayList<String>();
   public static ArrayList<String> lname = new ArrayList<String>();
+
+
+  /*
+   * This program tries several methods of cracking passwords through brute force
+   * It tries faster methods first to elminate passwords asap
+   */
+
+
   public static void main(String[] args)
   {
     if(args.length != 2) {
@@ -17,8 +25,7 @@ class PasswordCrack
     }
     long startTime = System.nanoTime();
 
-    try(
-      Scanner passReader = new Scanner(new File(args[1])))
+    try(Scanner passReader = new Scanner(new File(args[1])))
     {
 
       int i = 0;
@@ -56,7 +63,7 @@ class PasswordCrack
       System.out.println("\nMangle Names " + (System.nanoTime()-startTime)/1000000.0 +" \n");
       for(i = 0; i < encryptions.size(); i++)
       {
-        guesses = new ArrayList<String>();
+        guesses = new HashSet<String>();
         preappend(fname.get(i));
         reverseString(fname.get(i));
         mangles(fname.get(i));
@@ -91,25 +98,26 @@ class PasswordCrack
       for(i = 0; i < encryptions.size(); i++)
       {
 
-        guesses = new ArrayList<String>();
+        guesses = new HashSet<String>();
+
         preappend(fname.get(i));
         reverseString(fname.get(i));
         mangles(fname.get(i));
         toggle(fname.get(i));
+
         preappend(lname.get(i));
         mangles(lname.get(i));
         reverseString(lname.get(i));
         toggle(lname.get(i));
 
-        ArrayList<String> temp = guesses;
-        int end = guesses.size();
-        guesses = new ArrayList<String>();
-        for(int j = 0;j < end;j++)
+        HashSet<String> temp = guesses;
+        guesses = new HashSet<String>();
+        for(String guess: temp)
         {
-          preappend(temp.get(j));
-          reverseString(temp.get(j));
-          mangles(temp.get(i));
-          toggle(temp.get(j));
+          preappend(guess);
+          reverseString(guess);
+          mangles(guess);
+          toggle(guess);
         }
 
         for(String guess: guesses)
@@ -215,7 +223,7 @@ class PasswordCrack
         while(dictReader.hasNext())
         {
           String word = dictReader.next();
-          guesses = new ArrayList<String>();
+          guesses = new HashSet<String>();
 
           // preappend(word);
           reverseString(word);
@@ -223,12 +231,11 @@ class PasswordCrack
           toggle(word);
 
           int end = guesses.size();
-          for(int j = 0;j < end;j++)
+          for(String guess: guesses)
           {
-            // preappend(guesses.get(j));
-            reverseString(guesses.get(j));
-            mangles(word);
-            toggle(guesses.get(j));
+            reverseString(guess);
+            mangles(guess);
+            toggle(guess);
           }
 
 
@@ -258,7 +265,7 @@ class PasswordCrack
         while(dictReader.hasNext())
         {
           String word = dictReader.next();
-          guesses = new ArrayList<String>();
+          guesses = new HashSet<String>();
 
           preappend(word);
           reverseString(word);
@@ -266,12 +273,12 @@ class PasswordCrack
           toggle(word);
 
           int end = guesses.size();
-          for(int j = 0;j < end;j++)
+          for(String guess: guesses)
           {
-            preappend(guesses.get(j));
-            reverseString(guesses.get(j));
-            mangles(word);
-            toggle(guesses.get(j));
+            preappend(guess);
+            reverseString(guess);
+            mangles(guess);
+            toggle(guess);
           }
 
 
@@ -365,11 +372,6 @@ class PasswordCrack
   public static void reverseString(String word)
   {
     String reversed = new StringBuilder(word).reverse().toString();
-    // String reversed = "";
-    // for (int i = word.length()-1; i >= 0; i--)
-    // {
-    //   reversed += word.charAt(i);
-    // }
     guesses.add(reversed);
     guesses.add(reversed + word);
     guesses.add(word + reversed);

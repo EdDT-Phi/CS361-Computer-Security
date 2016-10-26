@@ -148,7 +148,7 @@ public class Encoder {
                 sum += prob[numLetters++];
             }
         } catch (Exception ignored) {
-            System.out.println("Nah");
+            System.out.println("Something went wrong while reading the file.");
             return;
         }
         float entropy = 0;
@@ -221,7 +221,7 @@ public class Encoder {
                 }
             }
         } catch (Exception ignored) {
-            System.out.println("Nahhh");
+            System.out.println("Something went wrong during encoding.");
         }
         return count;
     }
